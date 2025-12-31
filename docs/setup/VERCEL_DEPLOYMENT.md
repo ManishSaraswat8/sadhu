@@ -30,9 +30,28 @@ You need to set the following environment variables in Vercel:
 2. Navigate to **Settings** → **Environment Variables**
 3. Add each variable:
    - **Key**: `VITE_SUPABASE_URL`
-   - **Value**: Your Supabase URL
+   - **Value**: Your Supabase URL (must start with `https://`)
+     - Example: `https://dkpxubmenfgmaodsufli.supabase.co`
+     - **Important**: Include the `https://` prefix!
    - **Environment**: Production, Preview, Development (select all)
 4. Repeat for `VITE_SUPABASE_PUBLISHABLE_KEY`
+   - **Value**: Your Supabase anon/public key
+   - **Important**: Make sure there are no extra spaces or quotes
+
+### Common Issues
+
+**Error: "Invalid supabaseUrl: Must be a valid HTTP or HTTPS URL"**
+
+This means the URL is either:
+- Missing the `https://` prefix
+- Contains extra spaces or quotes
+- Not set at all (undefined)
+
+**Solution:**
+1. Check that `VITE_SUPABASE_URL` starts with `https://`
+2. Remove any quotes or spaces from the value
+3. Make sure the variable is set for the correct environment (Production/Preview/Development)
+4. **Redeploy** after adding/changing environment variables (Vercel requires a new deployment)
 
 ## Step 2: Deploy to Vercel
 
