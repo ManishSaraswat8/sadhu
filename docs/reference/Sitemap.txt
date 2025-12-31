@@ -1,0 +1,118 @@
+Site map
+
+Landing page
+
+	⁃	Clear cut hero section with video
+
+————————
+	⁃	Clear cut transformation section. (Benefits, and Results) -mental, emotional, physical
+
+Intent
+	•	Let users self-identify
+	•	Reduce skepticism
+———————-
+	⁃	Why guidance matters section(with guidance vs. alone comparison box)
+	⁃	Convenience of in person and online sessions
+
+Intent
+	•	Justify practitioners
+	•	Increase booking likelihood vs board-only purchase
+———————
+	⁃	Features section.  
+
+———————
+	⁃	who it’s for section(few audience bullet points)
+	⁃	Get started button
+Intent
+	•	Increase conversion quality
+	•	Repel wrong users
+———————
+	⁃	clinical studies section(to build confidence
+
+———————-
+
+Get started button will prompt to login or create an account. It will include a transformational sales pitch. (Nervous System Training, Mental Edge & Emotional Reset are within reach)
+
+Once email is verified the user will be directed to the product page(sadhu board+info page) with option to skip purchase. (The user will need to agree to terms&conditions at purchase). The shipping company api will be Canada post. 
+
+After purchase/skip the customer will be directed to the dashboard. 
+ 
+User dashboard
+
+User dashboard will have Getting Started window, Online Sessions window, In-Person Session window, Journal window, Actions Window.  In the sidebar there will be user profile, settings and purchases. Settings in the sidebar as well well as past purchases and content of videos that may be helpful.
+
+
+Getting Started will have introductory video on best practices and how to get started. 
+
+Online Sessions window will be an online session booking page with first selecting the practitioner, then pulling up the schedule of that practitioner. Option for 1:1 online sessions as well as group classes.(some online group sessions will correlate with in person sessions). The user can book the session and it’ll direct them to the payment page which will have options for single session purchase, or multiple package deal of 5 and 10 sessions. These will be stored in past purchases as available sessions/history.
+
+In Person(location specified) window will be also a booking page with group and 1:1 sessions options. (Admin must be able to correlate in person and online classes).
+
+FOR BOTH ONLINE AND IN PERSON SESSIONS, CLIENT WILL BE PROMOTED TO SIGN A LIABILITY WAIVER AFTER BOOKING.
+
+After every session, the user will be directed to the journal where they can write down emotions. 
+
+For the 1:1 online sessions a practitioner will be able to add certain daily practices a user should do in order to help them heal.(ex. Speak only kindly, rewire negative thoughts, etc.) 
+
+—————-
+
+Admin must have ability to add/change/ modify/name classes.
+
+Types of group & 1:1 online classes
+(Standing)
+	⁃	introduction 20min
+	⁃	standard 45 min
+	⁃	expert 1hour
+(Laying) 
+	⁃	standard 45 min
+
+In person group & 1:1 Classes
+(Standing)
+	⁃	Introduction 20 min
+	⁃	standard 45 min
+	⁃	Expert 1hour
+(Laying)
+	⁃	standard 45 min
+
+Video of each session must be recorded and stored safely in database. 
+
+—————————————
+On The footer of landing page a practitioner must have the ability to apply to practice and the application will be sent directly to admin.
+Once accepted admin will be able to create a practitioner profile. 
+
+Practitioner dashboard
+
+A practitioner will be able to manage their schedule, sessions, and be able to access the Action recommendations after 1:1 sessions with clients. 
+
+In the side bar they will have settings and earnings. 
+Settings will include general settings and contract practitioners will sign prior to practicing.
+Earnings will have payouts which will be paid evert 2 weeks. Inside earnings they will be able to check how many sessions they had in each period but also dating back 1 year. The practitioner will need to provide banking information for payout. Their take will be 80% and 20% will go to admin. 
+
+
+Admin dashboard
+Windows for Sessions, Practitioners and Clients.
+Admin must be able to change session names/times/information. 
+Must be able to add/remove/pause practitioners and setup their profile.
+Must be able to view practitioner applications and get new applications notifications. As well as active practitioners contracts. 
+In client window admin must be able to view liability waivers inside each client profile. Must be able to add/remove/pause clients. 
+Ability to retrieve recorded sessions. 
+
+Payments/Payouts
+
+Client will be taken to payment before completing a session booking if no sessions are in account. Payment provider is Stripe. (Advise on discount and sale pricing mechanics) 
+PRICING CAD
+Single Classes
+20MIN Intro - $55
+45 MIN Standard - $100
+60 MIN Expert - $130
+
+Group Classes 
+20MIN Intro - $48
+45MIN Standard - $90
+60MIN Expert - $120
+
+Sadhu Board - $229 CAD
+
+Geo pricing automatically adjusted to usd and cad should be applied. 
+
+Payouts to practitioner should be every 2 weeks. 75/25 split. They will be registered as independent contractors for tax purposes.

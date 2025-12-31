@@ -1,0 +1,88 @@
+project_id = "dkpxubmenfgmaodsufli"
+
+[functions.ai-meditation]
+verify_jwt = false
+
+[functions.twilio-token]
+verify_jwt = false
+
+[functions.memory-store]
+verify_jwt = false
+
+[functions.elevenlabs-knowledge]
+verify_jwt = false
+
+[functions.create-board-payment]
+verify_jwt = false
+
+[functions.create-session-payment]
+verify_jwt = false
+
+[functions.stripe-session-webhook]
+verify_jwt = false
+
+[functions.create-whereby-room]
+verify_jwt = false
+
+[functions.create-checkout]
+verify_jwt = false
+
+[functions.verify-subscription-session]
+verify_jwt = false
+
+[functions.create-agora-token]
+verify_jwt = false
+
+[functions.create-agora-room]
+verify_jwt = false
+
+[functions.record-audit-log]
+verify_jwt = false
+
+[functions.record-consent]
+verify_jwt = false
+
+[functions.get-consent-status]
+verify_jwt = false
+
+[functions.check-session-credits]
+verify_jwt = false
+
+[functions.list-users]
+verify_jwt = false
+
+[functions.list-payments]
+verify_jwt = false
+
+[functions.detect-currency]
+verify_jwt = false
+
+[functions.create-liability-waiver]
+verify_jwt = false
+
+[functions.get-liability-waiver-status]
+verify_jwt = false
+
+[functions.start-agora-recording]
+verify_jwt = false
+
+[functions.stop-agora-recording]
+verify_jwt = false
+
+[functions.get-recording-status]
+verify_jwt = false
+
+[functions.agora-recording-webhook]
+verify_jwt = false
+
+[functions.process-recording]
+verify_jwt = false
+
+[functions.encrypt-banking-data]
+verify_jwt = false
+
+[functions.seed-practitioners]
+verify_jwt = false
+
+[functions.book-session-with-credit]
+verify_jwt = false
