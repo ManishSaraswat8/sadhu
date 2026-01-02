@@ -96,7 +96,7 @@ serve(async (req) => {
       logStep("New user created", { userId });
 
       // Send password reset email so they can set their own password
-      const origin = req.headers.get("origin") || "https://lovable.dev";
+      const origin = req.headers.get("origin") || Deno.env.get("SITE_URL") || "http://localhost:8080";
       await supabaseAdmin.auth.admin.generateLink({
         type: 'recovery',
         email: customerEmail,

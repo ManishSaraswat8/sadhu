@@ -3,16 +3,16 @@ import { Activity, TrendingDown, HeartPulse } from "lucide-react";
 const ResearchSection = () => {
   const researchData = [
     {
-      icon: Activity,
-      title: "Autonomic Nervous System",
-      description:
-        "Research has shown substantial effects on cardiac autonomic responses, including reactions of both the sympathetic and parasympathetic nervous system, influencing self-rated relaxation, blood pressure, heart rate, heart rate variability (HRV), and temperature.",
-    },
-    {
       icon: HeartPulse,
       title: "Autonomic Nervous System Response",
       description:
         "A study in healthy young volunteers using a mechanical needle stimulation pad (a larger version of a Sadhu board for the back) found substantial effects on cardiac autonomic responses, including changes in blood pressure, heart rate, heart rate variability, and self-rated relaxation.",
+    },
+    {
+      icon: Activity,
+      title: "The Intervention",
+      description:
+        "A pain management specialist with 25 years of experience prescribed Copper Nail Sadhu Boards—a form of intense mechanical punctate stimulation—as an adjunctive home therapy for a cohort of chronic pain patients. This stimulus is designed to leverage neuroplasticity by providing intense, non-damaging input to the nervous system, modulating the Autonomic Nervous System (ANS) and disrupting chronic pain loops.",
     },
   ];
 
@@ -42,7 +42,7 @@ const ResearchSection = () => {
           </h2>
         </div>
 
-        {/* Research Cards */}
+        {/* Research Cards - Two Study Cases Side by Side */}
         <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-16">
           {researchData.map((item, index) => (
             <div
@@ -61,16 +61,6 @@ const ResearchSection = () => {
               </p>
             </div>
           ))}
-        </div>
-
-        {/* The Intervention */}
-        <div className="bg-card border border-primary/20 rounded-2xl p-8 md:p-12 max-w-5xl mx-auto mb-16 shadow-glow">
-          <h3 className="text-2xl font-heading font-semibold text-foreground mb-6">
-            The Intervention
-          </h3>
-          <p className="text-muted-foreground leading-relaxed text-lg">
-            A pain management specialist with 25 years of experience prescribed Copper Nail Sadhu Boards—a form of intense mechanical punctate stimulation—as an adjunctive home therapy for a cohort of chronic pain patients. This stimulus is designed to leverage neuroplasticity by providing intense, non-damaging input to the nervous system, modulating the Autonomic Nervous System (ANS) and disrupting chronic pain loops.
-          </p>
         </div>
 
         {/* Results */}
@@ -106,9 +96,14 @@ const ResearchSection = () => {
             <TrendingDown className="w-8 h-8 text-primary" />
             Conclusion
           </h3>
-          <p className="text-muted-foreground leading-relaxed text-lg">
-            Mechanical punctate stimulation, delivered via Sadhu Boards, offers a powerful, evidence-backed strategy for neuromodulation. The therapy achieved a near 4-in-5 reduction in opioid usage and substantial pain relief, proving it is a critical, scalable alternative for modern pain management.
-          </p>
+          <div className="space-y-6">
+            <p className="text-muted-foreground leading-relaxed text-lg">
+              Mechanical punctate stimulation, delivered via Sadhu Boards, offers a powerful, evidence-backed strategy for neuromodulation. The therapy achieved a near 4-in-5 reduction in opioid usage and substantial pain relief, proving it is a critical, scalable alternative for modern pain management.
+            </p>
+            <p className="text-muted-foreground leading-relaxed text-lg">
+              Research has shown substantial effects on cardiac autonomic responses, including reactions of both the sympathetic and parasympathetic nervous system, influencing self-rated relaxation, blood pressure, heart rate, heart rate variability (HRV), and temperature.
+            </p>
+          </div>
         </div>
       </div>
     </section>

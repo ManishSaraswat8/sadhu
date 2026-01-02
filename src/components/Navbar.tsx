@@ -11,10 +11,22 @@ const Navbar = () => {
 
   const scrollToSection = (sectionId: string) => {
     if (location.pathname !== "/") {
-      navigate(`/#${sectionId}`);
+      // Navigate to home page with hash, then scroll after navigation
+      navigate(`/#${sectionId}`, { replace: false });
     } else {
-      const element = document.getElementById(sectionId);
-      element?.scrollIntoView({ behavior: "smooth" });
+      // Already on home page, scroll immediately
+      setTimeout(() => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          const offset = 80; // Account for fixed navbar
+          const elementPosition = element.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - offset;
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: "smooth"
+          });
+        }
+      }, 100);
     }
   };
 
@@ -49,14 +61,17 @@ const Navbar = () => {
           </Link>
           
           <div className="hidden md:flex items-center gap-8">
+            <button onClick={() => scrollToSection("challenges")} className="text-muted-foreground hover:text-foreground transition-colors">
+              Challenges
+            </button>
             <button onClick={() => scrollToSection("about")} className="text-muted-foreground hover:text-foreground transition-colors">
               Our Mission
             </button>
-            <button onClick={() => scrollToSection("features")} className="text-muted-foreground hover:text-foreground transition-colors">
-              Features
+            <button onClick={() => scrollToSection("guidance")} className="text-muted-foreground hover:text-foreground transition-colors">
+              Guidance
             </button>
-            <button onClick={() => scrollToSection("pain-points")} className="text-muted-foreground hover:text-foreground transition-colors">
-              Pain Points
+            <button onClick={() => scrollToSection("benefits")} className="text-muted-foreground hover:text-foreground transition-colors">
+              Benefits
             </button>
             <button onClick={() => scrollToSection("research")} className="text-muted-foreground hover:text-foreground transition-colors">
               Research

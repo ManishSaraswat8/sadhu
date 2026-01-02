@@ -461,7 +461,7 @@ export function PastPurchases() {
                 ) : (
                   <div className="text-center py-2">
                     <p className="text-xs text-muted-foreground">
-                      No purchase history
+                      No wallet history
                     </p>
                     <Button variant="outline" size="sm" className="w-full text-xs mt-2" asChild>
                       <Link to="/sessions/payment">Buy Sessions</Link>

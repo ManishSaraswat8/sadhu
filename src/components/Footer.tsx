@@ -31,9 +31,9 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <a href="#subscription" className="text-muted-foreground hover:text-primary transition-colors text-sm">
-                  AI Meditation Guide
-                </a>
+                <Link to="/pricing" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                  Classes & Pricing
+                </Link>
               </li>
               <li>
                 <Link to="/pricing" className="text-muted-foreground hover:text-primary transition-colors text-sm">
@@ -47,9 +47,9 @@ const Footer = () => {
             <h4 className="font-heading text-lg text-foreground">Support</h4>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                <Link to="/faq" className="text-muted-foreground hover:text-primary transition-colors text-sm">
                   FAQ
-                </a>
+                </Link>
               </li>
               <li>
                 <Link to="/contact" className="text-muted-foreground hover:text-primary transition-colors text-sm">
@@ -57,9 +57,9 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors text-sm">
-                  Shipping
-                </a>
+                <Link to="/contact" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                  Shipping Info
+                </Link>
               </li>
               <li>
                 <Link to="/become-practitioner" className="text-muted-foreground hover:text-primary transition-colors text-sm">
@@ -78,19 +78,19 @@ const Footer = () => {
             <h4 className="font-heading text-lg text-foreground">Legal</h4>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                <Link to="/privacy-policy" className="text-muted-foreground hover:text-primary transition-colors text-sm">
                   Privacy Policy
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                <Link to="/terms-of-service" className="text-muted-foreground hover:text-primary transition-colors text-sm">
                   Terms of Service
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                <Link to="/refund-policy" className="text-muted-foreground hover:text-primary transition-colors text-sm">
                   Refund Policy
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

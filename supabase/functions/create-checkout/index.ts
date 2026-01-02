@@ -66,7 +66,7 @@ serve(async (req) => {
       logStep("Guest checkout - no authenticated user");
     }
 
-    const origin = req.headers.get("origin") || "https://lovable.dev";
+    const origin = req.headers.get("origin") || Deno.env.get("SITE_URL") || "http://localhost:8080";
     
     // Create checkout session - for guests, Stripe will collect email
     const sessionConfig: any = {

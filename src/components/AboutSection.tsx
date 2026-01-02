@@ -48,31 +48,23 @@ const AboutSection = () => {
           </div>
 
           <div className="bg-muted/20 rounded-2xl border border-border/30 p-8 md:p-12">
-            <div className={`prose prose-lg max-w-none text-muted-foreground leading-relaxed space-y-4 italic text-center ${!isStoryExpanded ? 'line-clamp-6' : ''}`}>
+            <div className={`prose prose-lg max-w-none text-muted-foreground leading-relaxed space-y-4 ${!isStoryExpanded ? 'line-clamp-6' : ''}`}>
               <p>
-                Our story began in a moment of collapse — the kind that forces you to look straight at your life and admit you've lost your way. For years, financial success was the only compass I followed. Financial market trading rewarded me for a while… until it didn't. In a blink, everything disappeared. What hurt most wasn't the money — it was realizing how much of myself I'd abandoned along the way. I had neglected love, family, and my own emotional world so deeply that when it all fell apart, the emptiness was undeniable.
+                Our work began during a period of reassessment. For several years, my focus was almost exclusively on financial performance through futures trading. That focus delivered results for a time, but it also came at a cost. When that chapter ended, it became clear that I had deprioritized important areas of life - relationships, emotional awareness, and long-term direction.
               </p>
               
               <p>
-                And then, just as I hit that breaking point, I fell for someone who wasn't meant to stay. The heartbreak carved open whatever was left, and it became the lowest moment of my life.
+                During this period, I also began experiencing persistent anxiety and frequent migraines. The symptoms were disruptive and difficult to ignore. What stood out was not just their intensity, but how closely they tracked with prolonged stress, overexertion, and a lack of regulation.
               </p>
 
               {isStoryExpanded && (
                 <>
                   <p>
-                    But rock bottom has a strange gift: it strips away everything that keeps you from seeing what matters.
+                    Concurrently, the decline of my love life highlighted the consequences of self-neglect. Adrift both personally and professionally, my health deteriorated. Sleepless nights became routine, dominated by a constant sense of defeat. It was in that fragile space that I met Olga - a person who became one of the most meaningful connections in my life. She introduced me to the Sadhu board practice. At first, the idea of willingly standing on nails felt absurd. But her guidance completely changed my life.
                   </p>
 
                   <p>
-                    It was in that fragile space that I met Olga — a person who became one of the most meaningful connections in my life. She introduced me to the Sadhu board practice. At first, the idea of willingly standing on nails felt absurd. But week by week, she guided me through it with patience and presence.
-                  </p>
-
-                  <p className="font-medium text-foreground">
-                    And then something shifted.
-                  </p>
-
-                  <p>
-                    Months into the practice, the numbness I had carried for years started breaking open. Emotions I had buried surfaced. Old beliefs about my worth unraveled. It was painful — but it was also the first honest confrontation I'd had with myself in years. In that discomfort, I felt something rare: clarity. And with clarity came movement. I started taking real action toward the life I actually wanted — not the one I was performing for the world.
+                    Emotions I had buried surfaced. Old beliefs about my worth unraveled. It was painful - but it was also the first honest confrontation I'd had with myself in years. In that discomfort, I felt something rare: clarity. And with clarity came movement. I started taking real action toward the life I actually wanted - not the one I was performing for the world. Both my mental and physical health improved. After months of insomnia, full night of sleep felt like a return to life. I'll never forget the feeling.
                   </p>
 
                   <p className="border-l-4 border-primary pl-6 py-2 italic bg-primary/5 rounded-r-lg">
@@ -80,16 +72,16 @@ const AboutSection = () => {
                   </p>
 
                   <p>
-                    As I continued researching, practicing, and studying this ancient method, I realized how many people must be silently struggling the way I was — disconnected, overwhelmed, and unsure where to turn. The Sadhu board didn't just transform my inner world; it rebuilt my confidence, my discipline, my emotional resilience, and the way I show up in every relationship.
+                    As I continued researching, practicing, and studying this ancient method, I realized how many people must be silently struggling the way I was - disconnected, overwhelmed, and unsure where to turn. The Sadhu board didn't just transform my inner world; it rebuilt my confidence, my discipline, my emotional resilience, and the way I show up in every relationship.
                   </p>
 
                   <p className="font-medium text-foreground">
-                    I knew then that this wasn't something to keep to myself. This was something to share — widely, intentionally, and with the support of modern technology.
+                    I knew then that this wasn't something to keep to myself.
                   </p>
 
                   <p className="text-center text-xl md:text-2xl font-heading italic text-foreground mt-8 leading-relaxed">
                     This is more than a tool.<br />
-                    <span className="block mt-2">It's the beginning of a new chapter — one built on truth, courage, and the belief that healing is not only possible… it's within reach for everyone.</span>
+                    <span className="block mt-2">It's the beginning of a new chapter - one built on truth, courage, and the belief that healing is not only possible... it's within reach for everyone.</span>
                   </p>
                 </>
               )}

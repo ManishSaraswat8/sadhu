@@ -38,11 +38,10 @@ const HeroSection = () => {
           
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-heading font-light leading-normal text-foreground pb-2">
             Your Nervous System's Guru
-            <span className="block text-gradient-teal font-semibold pb-1">Powered by Intelligence</span>
           </h1>
           
           <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            One of a kind mind-body performance platform for those who push limits yet crave a deeper, calmer, more powerful inner world—guided through transformative Sadhu board practice and adaptive AI.
+            A transformative performance practice for those who push limits yet seek a deeper, calmer, more resilient inner world-guided by experienced practitioners.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
@@ -51,9 +50,9 @@ const HeroSection = () => {
                 Begin Your Journey
               </Button>
             </Link>
-            <a href="#features">
+            <a href="#guidance">
               <Button variant="hero" size="xl">
-                Explore Features
+                Learn About Guidance
               </Button>
             </a>
           </div>
@@ -65,11 +64,11 @@ const HeroSection = () => {
             </div>
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 bg-primary rounded-full" />
-              AI Meditation Guide
+              Sacred Practice
             </div>
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 bg-primary rounded-full" />
-              Sacred Practice
+              Professional Guidance
             </div>
           </div>
         </div>

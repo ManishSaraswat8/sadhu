@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { ArrowLeft, Zap, Brain, Heart, Shield, Leaf, Circle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Footer from "@/components/Footer";
+import { Helmet } from "react-helmet-async";
 
 const SadhuBoardInfo = () => {
   useEffect(() => {
@@ -10,7 +11,18 @@ const SadhuBoardInfo = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <Helmet>
+        <title>The Sadhu Board - Premium Mango Wood Meditation Board | Sadhu</title>
+        <meta name="description" content="Discover the Sadhu Board - a handcrafted premium Mango Wood meditation board with copper nails. Transform your practice with this beautiful, sustainable tool for standing, laying, or holding meditation." />
+        <meta name="keywords" content="Sadhu Board, meditation board, Mango Wood meditation, copper nails, nail board meditation, premium meditation tool, handcrafted meditation board" />
+        <meta property="og:title" content="The Sadhu Board - Premium Mango Wood Meditation Board" />
+        <meta property="og:description" content="Discover the Sadhu Board - a handcrafted premium Mango Wood meditation board with copper nails for transformative practice." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={`${window.location.origin}/sadhu-board-info`} />
+        <link rel="canonical" href={`${window.location.origin}/sadhu-board-info`} />
+      </Helmet>
+      <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="container mx-auto px-4 py-4">
@@ -236,7 +248,8 @@ const SadhuBoardInfo = () => {
       </section>
 
       <Footer />
-    </div>
+      </div>
+    </>
   );
 };
 

@@ -3,8 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Users, User, ClipboardList, Loader2 } from "lucide-react";
-import { ActionChecklist } from "@/components/ActionChecklist";
+import { Users, User, Loader2 } from "lucide-react";
 
 interface Client {
   id: string;
@@ -21,7 +20,6 @@ export const PractitionerClients = ({ practitionerId }: PractitionerClientsProps
   const { toast } = useToast();
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchClients();
@@ -111,17 +109,6 @@ export const PractitionerClients = ({ practitionerId }: PractitionerClientsProps
     );
   }
 
-  if (selectedClientId) {
-    return (
-      <div className="space-y-4">
-        <Button variant="ghost" onClick={() => setSelectedClientId(null)}>
-          ← Back to Clients
-        </Button>
-        <ActionChecklist clientId={selectedClientId} practitionerId={practitionerId} />
-      </div>
-    );
-  }
-
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -157,14 +144,6 @@ export const PractitionerClients = ({ practitionerId }: PractitionerClientsProps
                     </p>
                   </div>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSelectedClientId(client.client_id)}
-                >
-                  <ClipboardList className="w-4 h-4 mr-2" />
-                  Manage Checklist
-                </Button>
               </div>
             ))}
           </div>

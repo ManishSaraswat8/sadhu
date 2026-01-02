@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { Button } from "@/components/ui/button";
@@ -76,7 +77,19 @@ const Subscribe = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+    <>
+      <Helmet>
+        <title>Subscribe - AI Meditation Guide | Sadhu</title>
+        <meta name="description" content="Subscribe to Sadhu's AI Meditation Guide - personalized voice-guided meditation sessions with speech-to-text interaction. Start your 7-day free trial today." />
+        <meta name="keywords" content="Sadhu subscription, AI meditation guide, meditation subscription, guided meditation, mindfulness subscription, meditation app" />
+        <meta property="og:title" content="Subscribe - AI Meditation Guide | Sadhu" />
+        <meta property="og:description" content="Subscribe to Sadhu's AI Meditation Guide - personalized voice-guided meditation sessions. Start your 7-day free trial." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={`${window.location.origin}/subscribe`} />
+        <link rel="canonical" href={`${window.location.origin}/subscribe`} />
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       {/* Header */}
       <header className="border-b border-border bg-card/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center gap-4">
@@ -201,7 +214,8 @@ const Subscribe = () => {
       </main>
 
       <Footer />
-    </div>
+      </div>
+    </>
   );
 };
 

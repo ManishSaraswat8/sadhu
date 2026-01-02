@@ -228,6 +228,8 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
   const [waiverSigned, setWaiverSigned] = useState(false);
   const [checkingWaiver, setCheckingWaiver] = useState(false);
   const [groupSessions, setGroupSessions] = useState<any[]>([]);
+  const [availableGroupClasses, setAvailableGroupClasses] = useState<any[]>([]);
+  const [selectedGroupSession, setSelectedGroupSession] = useState<any | null>(null);
   const [correlatedSessions, setCorrelatedSessions] = useState<Map<string, any>>(new Map());
   const { currency, formatPrice } = useCurrency();
 
@@ -338,14 +340,15 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
   };
 
   useEffect(() => {
-    if (selectedPractitioner && selectedDate) {
+    if (isGroup) {
+      // For group sessions, fetch all available pre-scheduled classes
+      fetchAvailableGroupClasses();
+    } else if (selectedPractitioner && selectedDate) {
+      // For 1:1 sessions, generate time slots based on practitioner availability
       generateTimeSlots();
-      if (isGroup) {
-        fetchGroupSessions();
-      }
       fetchCorrelatedSessions();
     }
-  }, [selectedPractitioner, selectedDate, isGroup, sessionLocation]);
+  }, [selectedPractitioner, selectedDate, isGroup, sessionLocation, selectedDuration, selectedSessionType]);
 
   // Check waiver status when moving to waiver step
   useEffect(() => {
@@ -539,6 +542,100 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
     setGroupSessions(data || []);
   };
 
+  // Fetch all available pre-scheduled group classes (admin-created)
+  const fetchAvailableGroupClasses = async () => {
+    if (!isGroup) {
+      setAvailableGroupClasses([]);
+      return;
+    }
+
+    try {
+      // Fetch all group sessions (max_participants > 1) that:
+      // 1. Are scheduled in the future
+      // 2. Have available spots
+      // 3. Match the selected session type and duration
+      const now = new Date();
+      
+      let query = supabase
+        .from("session_schedules")
+        .select(`
+          id,
+          scheduled_at,
+          duration_minutes,
+          max_participants,
+          current_participants,
+          session_location,
+          physical_location,
+          class_name,
+          practitioner:practitioners (
+            id,
+            name,
+            bio,
+            specialization,
+            avatar_url
+          )
+        `)
+        .gt("max_participants", 1) // Group sessions only
+        .gte("scheduled_at", now.toISOString())
+        .neq("status", "cancelled")
+        .order("scheduled_at", { ascending: true });
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error("Error fetching group classes:", error);
+        return;
+      }
+
+      // Filter by session type and duration if selected
+      let filtered = data || [];
+      
+      if (selectedDuration && selectedSessionType) {
+        // Get session type ID to match
+        const { data: sessionTypeData } = await supabase
+          .from("session_types")
+          .select("id")
+          .eq("duration_minutes", selectedDuration)
+          .eq("session_type", selectedSessionType)
+          .eq("is_group", true)
+          .eq("is_active", true)
+          .single();
+
+        if (sessionTypeData) {
+          // Note: We can't filter by session_type_id directly from session_schedules
+          // So we'll show all group classes and let user filter by duration
+          // In a real implementation, you'd want to add session_type_id to session_schedules
+        }
+      }
+
+      // Filter to only show classes with available spots
+      filtered = filtered.filter((session: any) => {
+        const current = session.current_participants || 0;
+        const max = session.max_participants || 1;
+        return current < max;
+      });
+
+      // Group classes by practitioner for better organization
+      const groupedByPractitioner = filtered.reduce((acc: any, session: any) => {
+        const practitionerId = session.practitioner?.id || 'unknown';
+        if (!acc[practitionerId]) {
+          acc[practitionerId] = {
+            practitioner: session.practitioner,
+            classes: []
+          };
+        }
+        acc[practitionerId].classes.push(session);
+        return acc;
+      }, {});
+
+      // Flatten back to array but keep practitioner grouping in display
+      setAvailableGroupClasses(filtered || []);
+    } catch (error) {
+      console.error("Error fetching available group classes:", error);
+      setAvailableGroupClasses([]);
+    }
+  };
+
   const fetchCorrelatedSessions = async () => {
     if (!selectedPractitioner || !selectedDate) return;
 
@@ -625,7 +722,16 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
   };
 
   const handleBookWithCredit = async () => {
-    if (!user || !selectedPractitioner || !selectedDate || !selectedTime) {
+    if (isGroup && !selectedGroupSession) {
+      toast({
+        title: "Missing Information",
+        description: "Please select a group class.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!isGroup && (!user || !selectedPractitioner || !selectedDate || !selectedTime)) {
       toast({
         title: "Missing Information",
         description: "Please select all required fields.",
@@ -637,8 +743,28 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
     setBooking(true);
 
     try {
-      const [hours, minutes] = selectedTime.split(":").map(Number);
-      const scheduledAt = setMinutes(setHours(selectedDate, hours), minutes);
+      let scheduledAt: Date;
+      let practitionerId: string;
+      let duration: number;
+      let location: 'online' | 'in_person';
+      let physicalLoc: string | null = null;
+
+      if (isGroup && selectedGroupSession) {
+        // For group sessions, use the selected group class details
+        scheduledAt = new Date(selectedGroupSession.scheduled_at);
+        practitionerId = selectedGroupSession.practitioner?.id || selectedGroupSession.practitioner_id;
+        duration = selectedGroupSession.duration_minutes || selectedDuration;
+        location = selectedGroupSession.session_location || sessionLocation;
+        physicalLoc = selectedGroupSession.physical_location || null;
+      } else {
+        // For 1:1 sessions, use selected date/time
+        const [hours, minutes] = selectedTime!.split(":").map(Number);
+        scheduledAt = setMinutes(setHours(selectedDate!, hours), minutes);
+        practitionerId = selectedPractitioner!.id;
+        duration = selectedDuration;
+        location = sessionLocation;
+        physicalLoc = sessionLocation === 'in_person' ? physicalLocation : null;
+      }
 
       // Get fresh session token
       const { data: sessionData } = await supabase.auth.getSession();
@@ -646,33 +772,107 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
         throw new Error("Not authenticated");
       }
 
-      // Call Edge Function to book session with credit
-      const { data, error } = await supabase.functions.invoke('book-session-with-credit', {
-        body: {
-          practitioner_id: selectedPractitioner.id,
-          scheduled_at: scheduledAt.toISOString(),
-          duration_minutes: selectedDuration,
-          session_type_id: sessionTypeId,
-          session_type: selectedSessionType,
-          is_group: isGroup,
-          session_location: sessionLocation,
-          physical_location: sessionLocation === 'in_person' ? physicalLocation : null,
-          notes: null,
-        },
-        headers: {
-          Authorization: `Bearer ${sessionData.session.access_token}`,
-        },
-      });
+      if (isGroup && selectedGroupSession) {
+        // For group sessions, join existing session (increment participant count)
+        // First, increment the participant count on the master group session
+        const { error: updateError } = await supabase
+          .from("session_schedules")
+          .update({
+            current_participants: (selectedGroupSession.current_participants || 0) + 1,
+          })
+          .eq("id", selectedGroupSession.id);
 
-      if (error) throw error;
-      if (!data?.success) {
-        throw new Error(data?.error || "Failed to book session");
+        if (updateError) throw updateError;
+
+        // Create a booking record for this user (links them to the group session)
+        // Use the same room_name so they join the same video room
+        const { error: bookingError } = await supabase
+          .from("session_schedules")
+          .insert({
+            practitioner_id: practitionerId,
+            client_id: user!.id,
+            scheduled_at: scheduledAt.toISOString(),
+            duration_minutes: duration,
+            room_name: selectedGroupSession.room_name || `group-${selectedGroupSession.id}`,
+            max_participants: selectedGroupSession.max_participants || 1,
+            current_participants: 1, // Individual entry, but part of the group
+            session_location: location,
+            physical_location: physicalLoc,
+            status: "scheduled",
+            notes: `Joined group class: ${selectedGroupSession.id}`,
+          });
+
+        if (bookingError) throw bookingError;
+
+        // Deduct credit for joining the group class
+        // Find an available credit
+        const { data: packageCredit } = await supabase
+          .from("user_session_credits")
+          .select("id, credits_remaining")
+          .eq("user_id", user!.id)
+          .is("session_type_id", null)
+          .gt("credits_remaining", 0)
+          .or("expires_at.is.null,expires_at.gt.now()")
+          .limit(1)
+          .maybeSingle();
+
+        if (packageCredit) {
+          await supabase
+            .from("user_session_credits")
+            .update({ credits_remaining: packageCredit.credits_remaining - 1 })
+            .eq("id", packageCredit.id);
+        } else if (sessionTypeId) {
+          const { data: typeCredit } = await supabase
+            .from("user_session_credits")
+            .select("id, credits_remaining")
+            .eq("user_id", user!.id)
+            .eq("session_type_id", sessionTypeId)
+            .gt("credits_remaining", 0)
+            .or("expires_at.is.null,expires_at.gt.now()")
+            .limit(1)
+            .maybeSingle();
+
+          if (typeCredit) {
+            await supabase
+              .from("user_session_credits")
+              .update({ credits_remaining: typeCredit.credits_remaining - 1 })
+              .eq("id", typeCredit.id);
+          }
+        }
+
+        toast({
+          title: "Class Joined!",
+          description: "You have successfully joined the group class.",
+        });
+      } else {
+        // For 1:1 sessions, use the existing credit booking flow
+        const { data, error } = await supabase.functions.invoke('book-session-with-credit', {
+          body: {
+            practitioner_id: practitionerId,
+            scheduled_at: scheduledAt.toISOString(),
+            duration_minutes: duration,
+            session_type_id: sessionTypeId,
+            session_type: selectedSessionType,
+            is_group: false,
+            session_location: location,
+            physical_location: physicalLoc,
+            notes: null,
+          },
+          headers: {
+            Authorization: `Bearer ${sessionData.session.access_token}`,
+          },
+        });
+
+        if (error) throw error;
+        if (!data?.success) {
+          throw new Error(data?.error || "Failed to book session");
+        }
+
+        toast({
+          title: "Session Booked!",
+          description: "Your session has been booked using a credit.",
+        });
       }
-
-      toast({
-        title: "Session Booked!",
-        description: "Your session has been booked using a credit.",
-      });
 
       // Refresh credits
       checkCredits();
@@ -681,6 +881,7 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
       setSelectedPractitioner(null);
       setSelectedDate(undefined);
       setSelectedTime(null);
+      setSelectedGroupSession(null);
       updateStep('sessionType');
       onSessionBooked?.();
       
@@ -699,7 +900,16 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
   };
 
   const handleBookSession = async () => {
-    if (!user || !selectedPractitioner || !selectedDate || !selectedTime) {
+    if (isGroup && !selectedGroupSession) {
+      toast({
+        title: "Missing Information",
+        description: "Please select a group class.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!isGroup && (!user || !selectedPractitioner || !selectedDate || !selectedTime)) {
       console.error("Missing required fields:", {
         user: !!user,
         selectedPractitioner: !!selectedPractitioner,
@@ -717,19 +927,40 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
     setBooking(true);
 
     try {
-      const [hours, minutes] = selectedTime.split(":").map(Number);
-      const scheduledAt = setMinutes(setHours(selectedDate, hours), minutes);
+      let scheduledAt: Date;
+      let practitionerId: string;
+      let duration: number;
+      let location: 'online' | 'in_person';
+      let physicalLoc: string | null = null;
+
+      if (isGroup && selectedGroupSession) {
+        // For group sessions, use the selected group class details
+        scheduledAt = new Date(selectedGroupSession.scheduled_at);
+        practitionerId = selectedGroupSession.practitioner?.id || selectedGroupSession.practitioner_id;
+        duration = selectedGroupSession.duration_minutes || selectedDuration;
+        location = selectedGroupSession.session_location || sessionLocation;
+        physicalLoc = selectedGroupSession.physical_location || null;
+      } else {
+        // For 1:1 sessions, use selected date/time
+        const [hours, minutes] = selectedTime!.split(":").map(Number);
+        scheduledAt = setMinutes(setHours(selectedDate!, hours), minutes);
+        practitionerId = selectedPractitioner!.id;
+        duration = selectedDuration;
+        location = sessionLocation;
+        physicalLoc = sessionLocation === 'in_person' ? physicalLocation : null;
+      }
       
       // Build payment page URL with session details
       const params = new URLSearchParams({
-        practitioner_id: selectedPractitioner.id,
+        practitioner_id: practitionerId,
         scheduled_at: scheduledAt.toISOString(),
-        duration_minutes: selectedDuration.toString(),
+        duration_minutes: duration.toString(),
         session_type: selectedSessionType,
         is_group: isGroup.toString(),
-        session_location: sessionLocation,
+        session_location: location,
         ...(sessionTypeId && { session_type_id: sessionTypeId }),
-        ...(physicalLocation && { physical_location: physicalLocation }),
+        ...(physicalLoc && { physical_location: physicalLoc }),
+        ...(isGroup && selectedGroupSession && { group_session_id: selectedGroupSession.id }),
       });
 
       const paymentUrl = `/sessions/payment?${params.toString()}`;
@@ -908,7 +1139,15 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
             <Button 
               className="w-full" 
               size="lg"
-              onClick={() => updateStep('practitioner')}
+              onClick={() => {
+                if (isGroup) {
+                  // For group sessions, skip practitioner selection and go directly to classes
+                  updateStep('datetime');
+                } else {
+                  // For 1:1 sessions, select practitioner first
+                  updateStep('practitioner');
+                }
+              }}
               disabled={!sessionTypeId}
             >
               Continue
@@ -964,91 +1203,181 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
           </div>
         )}
 
-        {step === 'datetime' && selectedPractitioner && (
+        {step === 'datetime' && (
           <div className="space-y-6">
-            <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-              <Avatar>
-                <AvatarImage src={selectedPractitioner.avatar_url || undefined} />
-                <AvatarFallback>{selectedPractitioner.name[0]}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <p className="font-medium">{selectedPractitioner.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {selectedDuration} min {selectedSessionType} • {isGroup ? 'Group' : '1:1'} • {sessionLocation === 'online' ? 'Online' : 'In-Person'}
-                </p>
-                <p className="text-sm font-medium text-primary mt-1">
-                  {formatPrice(getSelectedSessionTypePrice())}
-                </p>
-              </div>
-            </div>
-
             {/* Session Type Summary */}
             <div className="p-3 bg-muted/50 rounded-lg">
               <p className="text-xs text-muted-foreground mb-1">Session Type</p>
               <p className="text-sm font-medium">
-                {selectedDuration} min {selectedSessionType} • {isGroup ? 'Group' : '1:1'} • {sessionLocation === 'online' ? 'Online' : 'In-Person'}
+                {selectedDuration} min {selectedSessionType} • {isGroup ? 'Group Class' : '1:1 Session'} • {sessionLocation === 'online' ? 'Online' : 'In-Person'}
               </p>
               <p className="text-sm font-medium text-primary mt-1">
                 {formatPrice(getSelectedSessionTypePrice())}
               </p>
             </div>
 
-            <div className="flex flex-col md:flex-row gap-6">
-              <div className="flex-1">
-                <p className="text-sm font-medium mb-2 flex items-center gap-2">
-                  <CalendarIcon className="w-4 h-4" />
-                  Select Date
-                </p>
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={setSelectedDate}
-                  disabled={(date) => isBefore(date, startOfDay(new Date()))}
-                  className="rounded-md border"
-                />
-              </div>
-
-              {selectedDate && (
-                <div className="flex-1">
-                  <p className="text-sm font-medium mb-2 flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
-                    Available Times
+            {isGroup ? (
+              // Group Classes: Show pre-scheduled classes only
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm font-medium mb-3 flex items-center gap-2">
+                    <CalendarIcon className="w-4 h-4" />
+                    Available Group Classes
                   </p>
-                  <div className="grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto">
-                    {timeSlots.map((slot) => {
-                      // Check if this is a group session with available spots
-                      const groupSession = groupSessions.find(
-                        gs => {
-                          if (!gs?.scheduled_at) return false;
-                          const date = new Date(gs.scheduled_at);
-                          return !isNaN(date.getTime()) && format(date, "HH:mm") === slot.time;
-                        }
-                      );
-                      const canJoinGroup = groupSession && 
-                        (groupSession.current_participants || 0) < (groupSession.max_participants || 1);
-                      
-                      return (
-                        <Button
-                          key={slot.time}
-                          variant={selectedTime === slot.time ? "default" : "outline"}
-                          size="sm"
-                          disabled={!slot.available}
-                          onClick={() => setSelectedTime(slot.time)}
-                          className="w-full flex flex-col h-auto py-2"
-                        >
-                          <span>{slot.time}</span>
-                          {isGroup && canJoinGroup && (
-                            <span className="text-xs opacity-80 mt-1">
-                              {groupSession.max_participants - (groupSession.current_participants || 0)} spots left
-                            </span>
-                          )}
-                        </Button>
-                      );
-                    })}
-                  </div>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    Group classes are pre-scheduled by administrators. Select a class below to join.
+                  </p>
+                  
+                  {availableGroupClasses.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground border border-dashed rounded-lg">
+                      <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                      <p>No group classes available at this time</p>
+                      <p className="text-xs mt-1">Check back later or contact support for upcoming classes</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3 max-h-[500px] overflow-y-auto">
+                      {availableGroupClasses.map((groupClass: any) => {
+                        const scheduledDate = new Date(groupClass.scheduled_at);
+                        const spotsLeft = (groupClass.max_participants || 1) - (groupClass.current_participants || 0);
+                        const isSelected = selectedGroupSession?.id === groupClass.id;
+                        
+                        return (
+                          <Card
+                            key={groupClass.id}
+                            className={`cursor-pointer transition-all ${
+                              isSelected ? 'border-primary bg-primary/5' : 'hover:border-primary/50'
+                            }`}
+                            onClick={() => {
+                              setSelectedGroupSession(groupClass);
+                              setSelectedPractitioner(groupClass.practitioner);
+                              setSelectedDate(scheduledDate);
+                              setSelectedTime(format(scheduledDate, "HH:mm"));
+                            }}
+                          >
+                            <CardContent className="p-4">
+                              <div className="flex items-start justify-between gap-4">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-3 mb-2">
+                                    <Avatar className="w-10 h-10">
+                                      <AvatarImage src={groupClass.practitioner?.avatar_url || undefined} />
+                                      <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                                        {groupClass.practitioner?.name?.split(" ").map((n: string) => n[0]).join("") || "P"}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                      <p className="font-medium text-sm">{groupClass.practitioner?.name || 'Practitioner'}</p>
+                                      {groupClass.class_name && (
+                                        <p className="text-sm font-semibold text-primary mt-1">
+                                          {groupClass.class_name}
+                                        </p>
+                                      )}
+                                      {groupClass.practitioner?.specialization && (
+                                        <Badge variant="secondary" className="text-xs mt-1">
+                                          {groupClass.practitioner.specialization}
+                                        </Badge>
+                                      )}
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
+                                    <div className="flex items-center gap-1">
+                                      <CalendarIcon className="w-4 h-4" />
+                                      {format(scheduledDate, "MMM d, yyyy")}
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      <Clock className="w-4 h-4" />
+                                      {format(scheduledDate, "h:mm a")}
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      <Clock className="w-4 h-4" />
+                                      {groupClass.duration_minutes || selectedDuration} min
+                                    </div>
+                                    {groupClass.session_location === 'in_person' && groupClass.physical_location && (
+                                      <div className="flex items-center gap-1">
+                                        <MapPin className="w-4 h-4" />
+                                        {groupClass.physical_location}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                                
+                                <div className="text-right">
+                                  <Badge variant={spotsLeft > 0 ? "default" : "destructive"} className="mb-2">
+                                    {spotsLeft} {spotsLeft === 1 ? 'spot' : 'spots'} left
+                                  </Badge>
+                                  <p className="text-xs text-muted-foreground">
+                                    {groupClass.current_participants || 0} / {groupClass.max_participants || 1} participants
+                                  </p>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </div>
+            ) : (
+              // 1:1 Sessions: Show practitioner availability and time slots
+              selectedPractitioner && (
+                <>
+                  <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                    <Avatar>
+                      <AvatarImage src={selectedPractitioner.avatar_url || undefined} />
+                      <AvatarFallback>{selectedPractitioner.name[0]}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <p className="font-medium">{selectedPractitioner.name}</p>
+                      {selectedPractitioner.specialization && (
+                        <Badge variant="secondary" className="mt-1">
+                          {selectedPractitioner.specialization}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col md:flex-row gap-6">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium mb-2 flex items-center gap-2">
+                        <CalendarIcon className="w-4 h-4" />
+                        Select Date
+                      </p>
+                      <Calendar
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={setSelectedDate}
+                        disabled={(date) => isBefore(date, startOfDay(new Date()))}
+                        className="rounded-md border"
+                      />
+                    </div>
+
+                    {selectedDate && (
+                      <div className="flex-1">
+                        <p className="text-sm font-medium mb-2 flex items-center gap-2">
+                          <Clock className="w-4 h-4" />
+                          Available Times
+                        </p>
+                        <div className="grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto">
+                          {timeSlots.map((slot) => (
+                            <Button
+                              key={slot.time}
+                              variant={selectedTime === slot.time ? "default" : "outline"}
+                              size="sm"
+                              disabled={!slot.available}
+                              onClick={() => setSelectedTime(slot.time)}
+                              className="w-full"
+                            >
+                              {slot.time}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )
+            )}
 
             {/* In-Person Location Input */}
             {sessionLocation === 'in_person' && (
@@ -1068,16 +1397,32 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
               </div>
             )}
 
-            {selectedDate && selectedTime && (sessionLocation === 'online' || physicalLocation) && (
-              <Button 
-                className="w-full" 
-                size="lg"
-                onClick={() => updateStep('waiver')}
-                disabled={sessionLocation === 'in_person' && !physicalLocation}
-              >
-                Continue
-                <ChevronRight className="w-4 h-4 ml-2" />
-              </Button>
+            {/* Continue button */}
+            {isGroup ? (
+              // For group classes, need to select a class
+              selectedGroupSession && (
+                <Button 
+                  className="w-full" 
+                  size="lg"
+                  onClick={() => updateStep('waiver')}
+                >
+                  Continue
+                  <ChevronRight className="w-4 h-4 ml-2" />
+                </Button>
+              )
+            ) : (
+              // For 1:1 sessions, need date, time, and location
+              selectedDate && selectedTime && (sessionLocation === 'online' || physicalLocation) && (
+                <Button 
+                  className="w-full" 
+                  size="lg"
+                  onClick={() => updateStep('waiver')}
+                  disabled={sessionLocation === 'in_person' && !physicalLocation}
+                >
+                  Continue
+                  <ChevronRight className="w-4 h-4 ml-2" />
+                </Button>
+              )
             )}
           </div>
         )}
@@ -1102,7 +1447,10 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
           </div>
         )}
 
-        {step === 'confirm' && selectedPractitioner && selectedDate && selectedTime && (
+        {step === 'confirm' && (
+          (isGroup && selectedGroupSession) || 
+          (!isGroup && selectedPractitioner && selectedDate && selectedTime)
+        ) && (
           <div className="space-y-6">
             {/* Correlated Session Notice */}
             {(() => {
@@ -1151,48 +1499,85 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
             <div className="p-6 bg-muted/50 rounded-lg space-y-4">
               <h3 className="font-heading text-lg">Session Details</h3>
               
-              <div className="flex items-center gap-3">
-                <Avatar>
-                  <AvatarImage src={selectedPractitioner.avatar_url || undefined} />
-                  <AvatarFallback>{selectedPractitioner.name[0]}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-medium">{selectedPractitioner.name}</p>
-                  {selectedPractitioner.specialization && (
-                    <p className="text-sm text-muted-foreground">{selectedPractitioner.specialization}</p>
-                  )}
-                </div>
-              </div>
+              {(() => {
+                const practitioner = isGroup && selectedGroupSession 
+                  ? selectedGroupSession.practitioner 
+                  : selectedPractitioner;
+                const sessionDate = isGroup && selectedGroupSession
+                  ? new Date(selectedGroupSession.scheduled_at)
+                  : selectedDate!;
+                const sessionTime = isGroup && selectedGroupSession
+                  ? format(new Date(selectedGroupSession.scheduled_at), "HH:mm")
+                  : selectedTime!;
+                const sessionDuration = isGroup && selectedGroupSession
+                  ? selectedGroupSession.duration_minutes || selectedDuration
+                  : selectedDuration;
+                const sessionLoc = isGroup && selectedGroupSession
+                  ? selectedGroupSession.session_location || sessionLocation
+                  : sessionLocation;
+                const sessionPhysicalLoc = isGroup && selectedGroupSession
+                  ? selectedGroupSession.physical_location || physicalLocation
+                  : physicalLocation;
+                const spotsLeft = isGroup && selectedGroupSession
+                  ? (selectedGroupSession.max_participants || 1) - (selectedGroupSession.current_participants || 0)
+                  : null;
 
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-                <div>
-                  <p className="text-sm text-muted-foreground">Date</p>
-                  <p className="font-medium">{format(selectedDate, "EEEE, MMMM d, yyyy")}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Time</p>
-                  <p className="font-medium">{selectedTime}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Type</p>
-                  <p className="font-medium capitalize">{selectedSessionType} • {isGroup ? 'Group' : '1:1'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Location</p>
-                  <p className="font-medium">{sessionLocation === 'online' ? 'Online' : 'In-Person'}</p>
-                  {sessionLocation === 'in_person' && physicalLocation && (
-                    <p className="text-xs text-muted-foreground mt-1">{physicalLocation}</p>
-                  )}
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Duration</p>
-                  <p className="font-medium">{selectedDuration} minutes</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Price</p>
-                  <p className="font-medium text-primary">{formatPrice(getSelectedSessionTypePrice())}</p>
-                </div>
-              </div>
+                return (
+                  <>
+                    <div className="flex items-center gap-3">
+                      <Avatar>
+                        <AvatarImage src={practitioner?.avatar_url || undefined} />
+                        <AvatarFallback>{(practitioner?.name || 'P')[0]}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium">{practitioner?.name || 'Practitioner'}</p>
+                        {practitioner?.specialization && (
+                          <p className="text-sm text-muted-foreground">{practitioner.specialization}</p>
+                        )}
+                        {isGroup && spotsLeft !== null && (
+                          <Badge variant="outline" className="mt-1">
+                            {spotsLeft} {spotsLeft === 1 ? 'spot' : 'spots'} available
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Date</p>
+                        <p className="font-medium">{format(sessionDate, "EEEE, MMMM d, yyyy")}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Time</p>
+                        <p className="font-medium">
+                          {isGroup && selectedGroupSession
+                            ? format(new Date(selectedGroupSession.scheduled_at), "h:mm a")
+                            : selectedTime}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Type</p>
+                        <p className="font-medium capitalize">{selectedSessionType} • {isGroup ? 'Group Class' : '1:1 Session'}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Location</p>
+                        <p className="font-medium">{sessionLoc === 'online' ? 'Online' : 'In-Person'}</p>
+                        {sessionLoc === 'in_person' && sessionPhysicalLoc && (
+                          <p className="text-xs text-muted-foreground mt-1">{sessionPhysicalLoc}</p>
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Duration</p>
+                        <p className="font-medium">{sessionDuration} minutes</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Price</p>
+                        <p className="font-medium text-primary">{formatPrice(getSelectedSessionTypePrice())}</p>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
 
             {hasCredits ? (
@@ -1211,7 +1596,7 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
                   className="w-full" 
                   size="lg"
                   onClick={handleBookWithCredit}
-                  disabled={booking || !user || !selectedPractitioner || !selectedDate || !selectedTime}
+                  disabled={booking || !user || (isGroup ? !selectedGroupSession : (!selectedPractitioner || !selectedDate || !selectedTime))}
                 >
                   {booking ? (
                     <>
@@ -1231,7 +1616,7 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
                   className="w-full" 
                   size="lg"
                   onClick={handleBookSession}
-                  disabled={booking || !user || !selectedPractitioner || !selectedDate || !selectedTime}
+                  disabled={booking || !user || (isGroup ? !selectedGroupSession : (!selectedPractitioner || !selectedDate || !selectedTime))}
                 >
                   {booking ? (
                     <>
@@ -1249,7 +1634,7 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
                 className="w-full" 
                 size="lg"
                 onClick={handleBookSession}
-                disabled={booking || !user || !selectedPractitioner || !selectedDate || !selectedTime}
+                disabled={booking || !user || (isGroup ? !selectedGroupSession : (!selectedPractitioner || !selectedDate || !selectedTime))}
               >
                 {booking ? (
                   <>

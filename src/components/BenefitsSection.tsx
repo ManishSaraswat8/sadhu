@@ -37,6 +37,61 @@ const BenefitsSection = () => {
   return (
     <section id="benefits" className="py-24 bg-gradient-soft">
       <div className="container mx-auto px-6">
+        {/* Who Can Benefit Section */}
+        <div className="max-w-5xl mx-auto mb-24">
+          <div className="text-center mb-12">
+            <span className="text-primary font-medium tracking-widest uppercase text-sm">
+              Who We Serve
+            </span>
+            <h2 className="text-4xl md:text-5xl font-heading font-light mt-4 text-foreground">
+              Who Can Benefit
+            </h2>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Who Can Benefit */}
+            <div className="bg-card border border-primary/20 rounded-2xl p-8 md:p-10 shadow-glow">
+              <h3 className="text-2xl font-heading font-semibold text-foreground mb-6">
+                This Practice Is For You If:
+              </h3>
+              <ul className="space-y-4">
+                {[
+                  "Those experiencing anxiety or chronic stress",
+                  "Individuals who feel mentally overactive yet physically disconnected",
+                  "People whose performance remains high while their internal state feels strained or tense",
+                  "Those who notice recurring stress signals such as headaches, migraines, or persistent bodily tension",
+                  "Individuals seeking a structured way to build emotional regulation and resilience under pressure",
+                  "People who value guided practice and consistency over passive relaxation or quick relief"
+                ].map((item, index) => (
+                  <li key={index} className="flex items-start gap-3">
+                    <span className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0" />
+                    <span className="text-muted-foreground leading-relaxed">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Not For You */}
+            <div className="bg-muted/30 border border-border rounded-2xl p-8 md:p-10">
+              <h3 className="text-2xl font-heading font-semibold text-foreground mb-6">
+                This Practice Is Not For You If:
+              </h3>
+              <ul className="space-y-4">
+                {[
+                  "You prefer purely passive relaxation experiences",
+                  "You're unwilling to feel physical sensation as part of growth"
+                ].map((item, index) => (
+                  <li key={index} className="flex items-start gap-3">
+                    <span className="w-2 h-2 bg-muted-foreground rounded-full mt-2 flex-shrink-0" />
+                    <span className="text-muted-foreground leading-relaxed">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Why Practice Section */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <span className="text-primary font-medium tracking-widest uppercase text-sm">
             The Transformation

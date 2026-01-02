@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -79,23 +80,55 @@ const BecomePractitioner = () => {
   const onSubmit = async (data: ApplicationFormData) => {
     setIsSubmitting(true);
     try {
-      // For now, we'll store applications - this can be enhanced later
-      // to send emails or store in a dedicated applications table
-      console.log("Practitioner application submitted:", data);
+      const { error } = await supabase
+        .from("practitioner_applications")
+        .insert({
+          first_name: data.firstName,
+          last_name: data.lastName,
+          email: data.email,
+          phone: data.phone,
+          city: data.city,
+          country: data.country,
+          years_experience: data.yearsExperience,
+          specializations: data.specializations,
+          certifications: data.certifications || null,
+          current_practice: data.currentPractice,
+          personal_story: data.personalStory,
+          why_join: data.whyJoin,
+          availability: data.availability,
+          status: "pending",
+        });
+
+      if (error) {
+        console.error("Error submitting application:", error);
+        throw error;
+      }
       
       toast.success("Application submitted successfully! We'll review your application and get back to you within 5-7 business days.");
       form.reset();
       setTimeout(() => navigate("/"), 2000);
-    } catch (error) {
-      toast.error("Failed to submit application. Please try again.");
+    } catch (error: any) {
+      console.error("Failed to submit application:", error);
+      toast.error(error.message || "Failed to submit application. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
+    <>
+      <Helmet>
+        <title>Become a Practitioner - Join Sadhu | Sadhu</title>
+        <meta name="description" content="Join Sadhu as a meditation practitioner. Share your expertise, guide clients through transformative practices, and build your practice with our supportive platform." />
+        <meta name="keywords" content="become meditation practitioner, join Sadhu, meditation teacher application, mindfulness instructor, Sadhu practitioner" />
+        <meta property="og:title" content="Become a Practitioner - Join Sadhu" />
+        <meta property="og:description" content="Join Sadhu as a meditation practitioner. Share your expertise and guide clients through transformative practices." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={`${window.location.origin}/become-practitioner`} />
+        <link rel="canonical" href={`${window.location.origin}/become-practitioner`} />
+      </Helmet>
+      <div className="min-h-screen bg-background">
+        <Navbar />
       
       {/* Hero Section */}
       <section className="pt-32 pb-16 bg-gradient-to-b from-primary/5 to-background">
@@ -481,7 +514,8 @@ const BecomePractitioner = () => {
       </section>
 
       <Footer />
-    </div>
+      </div>
+    </>
   );
 };
 

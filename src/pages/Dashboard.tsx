@@ -4,11 +4,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LogOut, Brain, BookOpen, Video, User, Crown, Sparkles, Target } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { LogOut, BookOpen, Video, User, Sparkles, Target } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { ActionChecklist } from "@/components/ActionChecklist";
-import { WelcomeVideoDialog } from "@/components/WelcomeVideoDialog";
 import { UserLayout } from "@/components/UserLayout";
 import { GettingStarted } from "@/components/dashboard/GettingStarted";
 import { OnlineSessions } from "@/components/dashboard/OnlineSessions";
@@ -16,7 +13,6 @@ import { InPersonSessions } from "@/components/dashboard/InPersonSessions";
 import { ActionsWindow } from "@/components/dashboard/ActionsWindow";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import AIChatBot from "@/components/AIChatBot";
 
 const Dashboard = () => {
   const { user, loading, signOut } = useAuth();
@@ -133,11 +129,6 @@ const Dashboard = () => {
         </TabsContent>
       </Tabs>
 
-      {/* Welcome Video Dialog - shows on first login */}
-      <WelcomeVideoDialog userId={user.id} />
-
-      {/* AI Support Chat */}
-      <AIChatBot />
     </UserLayout>
   );
 };

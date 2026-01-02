@@ -1,4 +1,4 @@
-import { Video, Mail, Home, Brain, BookOpen, Calendar, Receipt } from "lucide-react";
+import { Video, Mail, Home, BookOpen, Calendar, Receipt } from "lucide-react";
 import { Link } from "react-router-dom";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -24,10 +24,9 @@ import { HelpfulVideos } from "@/components/sidebar/HelpfulVideos";
 
 const menuItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
-  { title: "AI Meditation", url: "/dashboard/meditation", icon: Brain },
   { title: "Journal", url: "/journal", icon: BookOpen },
-  { title: "Sessions", url: "/sessions", icon: Calendar },
-  { title: "Purchase History", url: "/purchases", icon: Receipt },
+  { title: "Classes", url: "/sessions", icon: Calendar },
+  { title: "Wallet", url: "/purchases", icon: Receipt },
   { title: "Step-by-Step", url: "/step-by-step", icon: Video },
   { title: "Contact", url: "/contact", icon: Mail },
 ];

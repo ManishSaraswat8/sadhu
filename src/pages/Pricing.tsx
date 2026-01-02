@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Check, ArrowLeft } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { Helmet } from "react-helmet-async";
 
 const Pricing = () => {
   useEffect(() => {
@@ -12,8 +13,19 @@ const Pricing = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
+    <>
+      <Helmet>
+        <title>Pricing - Transparent Plans | Sadhu</title>
+        <meta name="description" content="View Sadhu's transparent pricing for meditation subscriptions, Sadhu Board, and 1:1 sessions. Choose the plan that fits your practice journey." />
+        <meta name="keywords" content="Sadhu pricing, meditation subscription cost, Sadhu Board price, meditation session pricing, mindfulness pricing" />
+        <meta property="og:title" content="Pricing - Transparent Plans | Sadhu" />
+        <meta property="og:description" content="View Sadhu's transparent pricing for meditation subscriptions, Sadhu Board, and 1:1 sessions." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={`${window.location.origin}/pricing`} />
+        <link rel="canonical" href={`${window.location.origin}/pricing`} />
+      </Helmet>
+      <div className="min-h-screen bg-background">
+        <Navbar />
       
       <main className="container mx-auto px-6 py-24">
         <div className="text-center mb-16">
@@ -207,7 +219,8 @@ const Pricing = () => {
       </main>
 
       <Footer />
-    </div>
+      </div>
+    </>
   );
 };
 

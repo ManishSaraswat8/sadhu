@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { PractitionerList } from "@/components/admin/PractitionerList";
+import { PractitionerApplications } from "@/components/admin/PractitionerApplications";
 import { AvailabilityManager } from "@/components/admin/AvailabilityManager";
 import { ClientAssignmentManager } from "@/components/admin/ClientAssignmentManager";
 import { PractitionerEarnings } from "@/components/admin/PractitionerEarnings";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Practitioner = Tables<"practitioners">;
 
-type View = "list" | "availability" | "clients" | "earnings";
+type View = "list" | "applications" | "availability" | "clients" | "earnings";
 
 const AdminPractitioners = () => {
   const [currentView, setCurrentView] = useState<View>("list");
@@ -36,6 +38,8 @@ const AdminPractitioners = () => {
 
   const renderContent = () => {
     switch (currentView) {
+      case "applications":
+        return <PractitionerApplications />;
       case "availability":
         return selectedPractitioner ? (
           <AvailabilityManager
@@ -70,7 +74,15 @@ const AdminPractitioners = () => {
 
   return (
     <AdminLayout title="Practitioner Management">
-      {renderContent()}
+      <Tabs value={currentView} onValueChange={(v) => setCurrentView(v as View)} className="w-full">
+        <TabsList className="mb-6">
+          <TabsTrigger value="applications">Applications</TabsTrigger>
+          <TabsTrigger value="list">Practitioners</TabsTrigger>
+        </TabsList>
+        <TabsContent value={currentView} className="mt-0">
+          {renderContent()}
+        </TabsContent>
+      </Tabs>
     </AdminLayout>
   );
 };

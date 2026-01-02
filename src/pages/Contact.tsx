@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,8 +42,19 @@ const Contact = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
+    <>
+      <Helmet>
+        <title>Contact Us - Get in Touch | Sadhu</title>
+        <meta name="description" content="Contact Sadhu for support, questions about meditation practice, nail board guidance, or general inquiries. We're here to help with your mindfulness journey." />
+        <meta name="keywords" content="contact Sadhu, meditation support, nail board help, Sadhu customer service, meditation questions" />
+        <meta property="og:title" content="Contact Us - Get in Touch | Sadhu" />
+        <meta property="og:description" content="Contact Sadhu for support, questions about meditation practice, or general inquiries." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={`${window.location.origin}/contact`} />
+        <link rel="canonical" href={`${window.location.origin}/contact`} />
+      </Helmet>
+      <div className="min-h-screen bg-background">
+        <Navbar />
       
       <main className="pt-32 pb-16">
         <div className="container mx-auto px-6 max-w-2xl">
@@ -146,7 +158,8 @@ const Contact = () => {
       </main>
 
       <Footer />
-    </div>
+      </div>
+    </>
   );
 };
 
