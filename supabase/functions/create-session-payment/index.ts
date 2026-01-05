@@ -79,26 +79,16 @@ serve(async (req) => {
     }
     logStep("Currency detected", { currency: userCurrency });
 
-    // Fetch practitioner details (still needed for session creation)
-    const { data: practitioner, error: practitionerError } = await supabaseClient
-      .from("practitioners")
-      .select("id, name")
-      .eq("id", practitioner_id)
-      .single();
-
-    if (practitionerError || !practitioner) {
-      throw new Error("Practitioner not found");
-    }
-    logStep("Practitioner found", { practitioner });
-
     let sessionPrice: number;
     let productName: string;
     let productDescription: string;
     let packageId: string | null = null;
     let sessionTypeId: string | null = null;
+    let practitioner = null;
 
     // Determine pricing based on payment_type
     if (payment_type === 'package_5' || payment_type === 'package_10') {
+      // Package purchases don't require a practitioner - skip practitioner check
       // Package purchase
       const sessionCount = payment_type === 'package_5' ? 5 : 10;
       
@@ -209,6 +199,24 @@ serve(async (req) => {
         sessionTypeId = data.id;
       }
 
+      // For single session purchases, we need a practitioner
+      if (!practitioner_id) {
+        throw new Error("Practitioner ID is required for single session purchases");
+      }
+
+      // Fetch practitioner details (needed for session creation)
+      const { data: practitionerData, error: practitionerError } = await supabaseClient
+        .from("practitioners")
+        .select("id, name")
+        .eq("id", practitioner_id)
+        .single();
+
+      if (practitionerError || !practitionerData) {
+        throw new Error("Practitioner not found");
+      }
+      practitioner = practitionerData;
+      logStep("Practitioner found", { practitioner });
+
       sessionPrice = userCurrency === 'cad'
         ? Math.round(sessionTypeData.price_cad * 100) // Convert to cents
         : Math.round(sessionTypeData.price_usd * 100);
@@ -262,7 +270,7 @@ serve(async (req) => {
       success_url: `${req.headers.get("origin")}/dashboard?session_booked=true&payment_type=${payment_type}`,
       cancel_url: `${req.headers.get("origin")}/sessions?cancelled=true`,
       metadata: {
-        practitioner_id,
+        ...(practitioner_id && { practitioner_id }),
         client_id: user.id,
         payment_type,
         currency: userCurrency,
