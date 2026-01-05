@@ -16,7 +16,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { Loader2, Save, Globe, Mail, Shield, DollarSign } from "lucide-react";
+import { StudioLocationsManager } from "@/components/admin/StudioLocationsManager";
+import { Loader2, Save, Globe, Mail, Shield, DollarSign, MapPin } from "lucide-react";
 import { toast } from "sonner";
 
 const AdminSettings = () => {
@@ -237,6 +238,22 @@ const AdminSettings = () => {
                 through your Supabase project settings or environment variables.
               </p>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Studio Locations */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MapPin className="w-5 h-5" />
+              Studio Locations
+            </CardTitle>
+            <CardDescription>
+              Manage in-person session studio locations
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <StudioLocationsManager />
           </CardContent>
         </Card>
 

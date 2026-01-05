@@ -10,10 +10,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { format, addDays, setHours, setMinutes, isBefore, isAfter, startOfDay } from "date-fns";
-import { Loader2, Clock, User, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Package, Video, MapPin, Users, User as UserIcon, Link2, FileText } from "lucide-react";
+import { Loader2, Clock, User, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Package, Video, MapPin, Users, User as UserIcon, Link2, FileText, ShoppingCart } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCurrency } from "@/hooks/useCurrency";
 import { LiabilityWaiver } from "@/components/LiabilityWaiver";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -166,6 +168,9 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
   const [sessionTypeId, setSessionTypeId] = useState<string | null>(null);
   const [step, setStep] = useState<'sessionType' | 'practitioner' | 'datetime' | 'waiver' | 'confirm'>(initialState.step);
   const [physicalLocation, setPhysicalLocation] = useState<string>(initialState.physicalLocation);
+  const [selectedStudioLocation, setSelectedStudioLocation] = useState<string | null>(null);
+  const [studioLocations, setStudioLocations] = useState<Array<{ id: string; name: string; address: string; city?: string; province_state?: string; country?: string; postal_code?: string }>>([]);
+  const [userHasAnyCredits, setUserHasAnyCredits] = useState<boolean | null>(null);
 
   // Update URL with current state
   const updateURL = (updates: {
@@ -236,7 +241,26 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
   useEffect(() => {
     fetchSessionTypes();
     fetchPractitioners();
+    fetchStudioLocations();
   }, []);
+
+  const fetchStudioLocations = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("studio_locations" as any)
+        .select("*")
+        .eq("is_active", true)
+        .order("name", { ascending: true });
+
+      if (error) {
+        console.error("Error fetching studio locations:", error);
+      } else {
+        setStudioLocations((data || []) as Array<{ id: string; name: string; address: string; city?: string; province_state?: string; country?: string; postal_code?: string }>);
+      }
+    } catch (error) {
+      console.error("Error fetching studio locations:", error);
+    }
+  };
 
   // Load practitioner from URL on mount
   useEffect(() => {
@@ -1023,30 +1047,279 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
       <CardContent>
         {step === 'sessionType' && (
           <div className="space-y-6">
-            {/* Location Selection */}
-            <div>
-              <p className="text-sm font-medium mb-3 flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
-                Session Location
-              </p>
-              <ToggleGroup
-                type="single"
-                value={sessionLocation}
-                onValueChange={(value) => value && setSessionLocation(value as 'online' | 'in_person')}
-                className="grid grid-cols-2 gap-3"
-              >
-                <ToggleGroupItem value="online" aria-label="Online" className="flex flex-col h-auto py-4">
-                  <Video className="w-5 h-5 mb-2" />
-                  <span>Online</span>
-                </ToggleGroupItem>
-                <ToggleGroupItem value="in_person" aria-label="In-Person" className="flex flex-col h-auto py-4">
-                  <MapPin className="w-5 h-5 mb-2" />
-                  <span>In-Person</span>
-                </ToggleGroupItem>
-              </ToggleGroup>
-            </div>
+            {/* Show "Buy Credits" prompt if no credits */}
+            {userHasAnyCredits === false && (
+              <div className="p-4 bg-primary/10 border border-primary/30 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <Package className="w-5 h-5 text-primary" />
+                  <span className="font-medium text-primary">No Class Credits Available</span>
+                </div>
+                <p className="text-sm text-muted-foreground mb-3">
+                  You need class credits to book a session. Purchase credits in your wallet.
+                </p>
+                <Button
+                  variant="default"
+                  onClick={() => navigate('/wallet')}
+                  className="w-full"
+                >
+                  <ShoppingCart className="w-4 h-4 mr-2" />
+                  Buy Class Credits
+                </Button>
+              </div>
+            )}
 
-            {/* Session Type Selection (Standing/Laying) */}
+            {/* Location Selection - Online/In-Person Tabs */}
+            <Tabs value={sessionLocation} onValueChange={(value) => setSessionLocation(value as 'online' | 'in_person')}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="online" className="flex items-center gap-2">
+                  <Video className="w-4 h-4" />
+                  Online
+                </TabsTrigger>
+                <TabsTrigger value="in_person" className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  In-Person
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="online" className="mt-6">
+                <div className="space-y-6">
+                  {/* Online: Show scheduled group classes + 1:1 booking option */}
+                  <div>
+                    <p className="text-sm font-medium mb-3">Available Group Classes</p>
+                    {availableGroupClasses.filter((c: any) => c.session_location === 'online').length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground border border-dashed rounded-lg">
+                        <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                        <p>No online group classes scheduled</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                        {availableGroupClasses
+                          .filter((c: any) => c.session_location === 'online')
+                          .map((groupClass: any) => {
+                            const scheduledDate = new Date(groupClass.scheduled_at);
+                            const spotsLeft = (groupClass.max_participants || 1) - (groupClass.current_participants || 0);
+                            
+                            return (
+                              <Card
+                                key={groupClass.id}
+                                className="cursor-pointer hover:border-primary/50 transition-all"
+                                onClick={() => {
+                                  setSelectedGroupSession(groupClass);
+                                  setIsGroup(true);
+                                  setSelectedDuration(groupClass.duration_minutes || 60);
+                                  updateStep('datetime');
+                                }}
+                              >
+                                <CardContent className="p-4">
+                                  <div className="flex items-start justify-between gap-4">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-3 mb-2">
+                                        <Avatar className="w-10 h-10">
+                                          <AvatarImage src={groupClass.practitioner?.avatar_url || undefined} />
+                                          <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                                            {groupClass.practitioner?.name?.split(" ").map((n: string) => n[0]).join("") || "P"}
+                                          </AvatarFallback>
+                                        </Avatar>
+                                        <div>
+                                          <p className="font-medium text-sm">{groupClass.practitioner?.name || 'Practitioner'}</p>
+                                          {groupClass.class_name && (
+                                            <p className="text-sm font-semibold text-primary mt-1">
+                                              {groupClass.class_name}
+                                            </p>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
+                                        <div className="flex items-center gap-1">
+                                          <CalendarIcon className="w-4 h-4" />
+                                          {format(scheduledDate, "MMM d, yyyy")}
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                          <Clock className="w-4 h-4" />
+                                          {format(scheduledDate, "h:mm a")}
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                          <Clock className="w-4 h-4" />
+                                          {groupClass.duration_minutes || 60} min
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <Badge variant={spotsLeft > 0 ? "default" : "destructive"}>
+                                      {spotsLeft} {spotsLeft === 1 ? 'spot' : 'spots'} left
+                                    </Badge>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            );
+                          })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 1:1 Booking Option */}
+                  <div className="pt-4 border-t">
+                    <p className="text-sm font-medium mb-3">Book 1:1 Session</p>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      Book a personalized 1:1 session when practitioners are available
+                    </p>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => {
+                        setIsGroup(false);
+                        updateStep('practitioner');
+                      }}
+                    >
+                      <UserIcon className="w-4 h-4 mr-2" />
+                      Book 1:1 Session
+                    </Button>
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="in_person" className="mt-6">
+                <div className="space-y-6">
+                  {/* Studio Location Selection */}
+                  <div>
+                    <Label htmlFor="studio-location" className="text-sm font-medium mb-2 block">
+                      Select Studio Location
+                    </Label>
+                    <Select value={selectedStudioLocation || ''} onValueChange={setSelectedStudioLocation}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a studio location..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {studioLocations.length === 0 ? (
+                          <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                            No studio locations available
+                          </div>
+                        ) : (
+                          studioLocations.map((location) => (
+                            <SelectItem key={location.id} value={location.id}>
+                              {location.name} - {location.address}
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Studio locations are managed by administrators
+                    </p>
+                  </div>
+
+                  {/* In-Person: Show scheduled group classes + 1:1 booking option */}
+                  {selectedStudioLocation && (
+                    <>
+                      <div>
+                        <p className="text-sm font-medium mb-3">Available Group Classes</p>
+                        {availableGroupClasses.filter((c: any) => c.session_location === 'in_person' && c.physical_location === selectedStudioLocation).length === 0 ? (
+                          <div className="text-center py-8 text-muted-foreground border border-dashed rounded-lg">
+                            <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                            <p>No group classes scheduled at this location</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                        {availableGroupClasses
+                          .filter((c: any) => c.session_location === 'in_person' && (selectedStudioLocation ? c.physical_location === selectedStudioLocation : true))
+                              .map((groupClass: any) => {
+                                const scheduledDate = new Date(groupClass.scheduled_at);
+                                const spotsLeft = (groupClass.max_participants || 1) - (groupClass.current_participants || 0);
+                                
+                                return (
+                                  <Card
+                                    key={groupClass.id}
+                                    className="cursor-pointer hover:border-primary/50 transition-all"
+                                    onClick={() => {
+                                      setSelectedGroupSession(groupClass);
+                                      setIsGroup(true);
+                                      setSelectedDuration(groupClass.duration_minutes || 60);
+                                      setPhysicalLocation(groupClass.physical_location || '');
+                                      // Set session type from group class if available, otherwise default to standing
+                                      if (groupClass.session_type) {
+                                        setSelectedSessionType(groupClass.session_type as 'standing' | 'laying');
+                                      }
+                                      updateStep('waiver');
+                                    }}
+                                  >
+                                    <CardContent className="p-4">
+                                      <div className="flex items-start justify-between gap-4">
+                                        <div className="flex-1">
+                                          <div className="flex items-center gap-3 mb-2">
+                                            <Avatar className="w-10 h-10">
+                                              <AvatarImage src={groupClass.practitioner?.avatar_url || undefined} />
+                                              <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                                                {groupClass.practitioner?.name?.split(" ").map((n: string) => n[0]).join("") || "P"}
+                                              </AvatarFallback>
+                                            </Avatar>
+                                            <div>
+                                              <p className="font-medium text-sm">{groupClass.practitioner?.name || 'Practitioner'}</p>
+                                              {groupClass.class_name && (
+                                                <p className="text-sm font-semibold text-primary mt-1">
+                                                  {groupClass.class_name}
+                                                </p>
+                                              )}
+                                            </div>
+                                          </div>
+                                          <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
+                                            <div className="flex items-center gap-1">
+                                              <CalendarIcon className="w-4 h-4" />
+                                              {format(scheduledDate, "MMM d, yyyy")}
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                              <Clock className="w-4 h-4" />
+                                              {format(scheduledDate, "h:mm a")}
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                              <MapPin className="w-4 h-4" />
+                                              {groupClass.physical_location || selectedStudioLocation}
+                                            </div>
+                                          </div>
+                                        </div>
+                                        <Badge variant={spotsLeft > 0 ? "default" : "destructive"}>
+                                          {spotsLeft} {spotsLeft === 1 ? 'spot' : 'spots'} left
+                                        </Badge>
+                                      </div>
+                                    </CardContent>
+                                  </Card>
+                                );
+                              })}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* 1:1 Booking Option */}
+                      <div className="pt-4 border-t">
+                        <p className="text-sm font-medium mb-3">Book 1:1 Session</p>
+                        <p className="text-xs text-muted-foreground mb-4">
+                          Book a personalized 1:1 session when practitioners are available
+                        </p>
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => {
+                            setIsGroup(false);
+                            setPhysicalLocation(selectedStudioLocation || '');
+                            // Set default values for 1:1 booking
+                            setSelectedSessionType('standing');
+                            setSelectedDuration(60);
+                            updateStep('practitioner');
+                          }}
+                        >
+                          <UserIcon className="w-4 h-4 mr-2" />
+                          Book 1:1 Session
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
+        )}
+
+        {step === 'practitioner' && (
+          <div className="space-y-6">
+            {/* Practice Type Selection for 1:1 */}
             <div>
               <p className="text-sm font-medium mb-3">Practice Type</p>
               <RadioGroup
@@ -1077,129 +1350,67 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
               </RadioGroup>
             </div>
 
-            {/* Session Format (1:1 or Group) */}
-            <div>
-              <p className="text-sm font-medium mb-3 flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                Session Format
-              </p>
-              <ToggleGroup
-                type="single"
-                value={isGroup ? 'group' : 'one-on-one'}
-                onValueChange={(value) => setIsGroup(value === 'group')}
-                className="grid grid-cols-2 gap-3"
-              >
-                <ToggleGroupItem value="one-on-one" aria-label="1:1" className="flex flex-col h-auto py-4">
-                  <UserIcon className="w-5 h-5 mb-2" />
-                  <span>1:1 Session</span>
-                  <span className="text-xs text-muted-foreground mt-1">Personalized</span>
-                </ToggleGroupItem>
-                <ToggleGroupItem value="group" aria-label="Group" className="flex flex-col h-auto py-4">
-                  <Users className="w-5 h-5 mb-2" />
-                  <span>Group Session</span>
-                  <span className="text-xs text-muted-foreground mt-1">Community</span>
-                </ToggleGroupItem>
-              </ToggleGroup>
-            </div>
-
-            {/* Duration Selection */}
+            {/* Duration Selection for 1:1 */}
             <div>
               <p className="text-sm font-medium mb-3 flex items-center gap-2">
                 <Clock className="w-4 h-4" />
                 Duration
               </p>
               <div className="grid grid-cols-3 gap-3">
-                {[20, 45, 60].map((duration) => {
-                  const sessionType = availableSessionTypes.find(
-                    st => (st as any).duration_minutes === duration &&
-                    (st as any).session_type === selectedSessionType &&
-                    (st as any).is_group === isGroup
-                  ) as any;
-                  const price = sessionType ? (currency === 'cad' ? sessionType.price_cad : sessionType.price_usd) : 0;
-                  
-                  return (
-                    <Button
-                      key={duration}
-                      variant={selectedDuration === duration ? "default" : "outline"}
-                      onClick={() => setSelectedDuration(duration as 20 | 45 | 60)}
-                      className="h-auto py-3 flex flex-col"
-                    >
-                      <span className="font-medium">{duration} min</span>
-                      {price > 0 && (
-                        <span className="text-xs opacity-80 mt-1">
-                          {formatPrice(price)}
-                        </span>
-                      )}
-                    </Button>
-                  );
-                })}
+                {[20, 45, 60].map((duration) => (
+                  <Button
+                    key={duration}
+                    variant={selectedDuration === duration ? "default" : "outline"}
+                    onClick={() => setSelectedDuration(duration as 20 | 45 | 60)}
+                    className="h-auto py-3"
+                  >
+                    <span className="font-medium">{duration} min</span>
+                  </Button>
+                ))}
               </div>
             </div>
 
-            <Button 
-              className="w-full" 
-              size="lg"
-              onClick={() => {
-                if (isGroup) {
-                  // For group sessions, skip practitioner selection and go directly to classes
-                  updateStep('datetime');
-                } else {
-                  // For 1:1 sessions, select practitioner first
-                  updateStep('practitioner');
-                }
-              }}
-              disabled={!sessionTypeId}
-            >
-              Continue
-              <ChevronRight className="w-4 h-4 ml-2" />
-            </Button>
-          </div>
-        )}
-
-        {step === 'practitioner' && (
-          <div className="space-y-4">
-            {practitioners.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <User className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p>No practitioners available at the moment</p>
-              </div>
-            ) : (
-              practitioners.map((practitioner) => (
-                <div
-                  key={practitioner.id}
-                  className="flex items-center gap-4 p-4 rounded-lg border border-border hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-colors"
-                  onClick={() => handleSelectPractitioner(practitioner)}
-                >
-                  <Avatar className="w-14 h-14">
-                    <AvatarImage src={practitioner.avatar_url || undefined} />
-                    <AvatarFallback className="bg-primary/10 text-primary">
-                      {practitioner.name.split(" ").map(n => n[0]).join("")}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <h3 className="font-medium">{practitioner.name}</h3>
-                    {practitioner.specialization && (
-                      <Badge variant="secondary" className="mt-1">
-                        {practitioner.specialization}
-                      </Badge>
-                    )}
-                    {practitioner.bio && (
-                      <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                        {practitioner.bio}
-                      </p>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    {practitioner.half_hour_rate && (
-                      <p className="text-sm font-medium text-primary">
-                        ${practitioner.half_hour_rate.toFixed(0)}/30min
-                      </p>
-                    )}
-                    <ChevronRight className="w-5 h-5 text-muted-foreground mt-1" />
-                  </div>
+            {/* Practitioner Selection */}
+            <div>
+              <p className="text-sm font-medium mb-3">Choose a Practitioner</p>
+              {practitioners.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground border border-dashed rounded-lg">
+                  <User className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <p>No practitioners available at the moment</p>
                 </div>
-              ))
-            )}
+              ) : (
+                <div className="space-y-3">
+                  {practitioners.map((practitioner) => (
+                    <div
+                      key={practitioner.id}
+                      className="flex items-center gap-4 p-4 rounded-lg border border-border hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-colors"
+                      onClick={() => handleSelectPractitioner(practitioner)}
+                    >
+                      <Avatar className="w-14 h-14">
+                        <AvatarImage src={practitioner.avatar_url || undefined} />
+                        <AvatarFallback className="bg-primary/10 text-primary">
+                          {practitioner.name.split(" ").map(n => n[0]).join("")}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <h3 className="font-medium">{practitioner.name}</h3>
+                        {practitioner.specialization && (
+                          <Badge variant="secondary" className="mt-1">
+                            {practitioner.specialization}
+                          </Badge>
+                        )}
+                        {practitioner.bio && (
+                          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                            {practitioner.bio}
+                          </p>
+                        )}
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -1210,9 +1421,6 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
               <p className="text-xs text-muted-foreground mb-1">Session Type</p>
               <p className="text-sm font-medium">
                 {selectedDuration} min {selectedSessionType} • {isGroup ? 'Group Class' : '1:1 Session'} • {sessionLocation === 'online' ? 'Online' : 'In-Person'}
-              </p>
-              <p className="text-sm font-medium text-primary mt-1">
-                {formatPrice(getSelectedSessionTypePrice())}
               </p>
             </div>
 
@@ -1569,10 +1777,6 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
                       <div>
                         <p className="text-sm text-muted-foreground">Duration</p>
                         <p className="font-medium">{sessionDuration} minutes</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Price</p>
-                        <p className="font-medium text-primary">{formatPrice(getSelectedSessionTypePrice())}</p>
                       </div>
                     </div>
                   </>

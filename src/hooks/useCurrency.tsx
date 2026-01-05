@@ -27,9 +27,30 @@ const detectCurrency = (): Currency => {
     return 'cad';
   }
 
-  // Try timezone as fallback
+  // Try timezone as fallback - check for Canadian timezones
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  if (timezone.includes('Toronto') || timezone.includes('Vancouver') || timezone.includes('Montreal') || timezone.includes('Canada')) {
+  const canadianTimezones = [
+    'America/Toronto',
+    'America/Vancouver',
+    'America/Montreal',
+    'America/Edmonton',
+    'America/Winnipeg',
+    'America/Halifax',
+    'America/St_Johns',
+    'America/Regina',
+    'America/Yellowknife',
+    'America/Whitehorse',
+    'America/Dawson',
+    'America/Inuvik',
+    'America/Resolute',
+    'America/Cambridge_Bay',
+    'America/Glace_Bay',
+    'America/Goose_Bay',
+    'America/Moncton',
+    'America/Thunder_Bay',
+  ];
+  
+  if (canadianTimezones.some(tz => timezone.includes(tz) || timezone.toLowerCase().includes('canada'))) {
     return 'cad';
   }
 

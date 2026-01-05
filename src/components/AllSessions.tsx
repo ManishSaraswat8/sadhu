@@ -8,8 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { Video, Calendar, Clock, Loader2, Download, BookOpen, Target, User, MapPin, Filter, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Video, Calendar, Clock, Loader2, Download, BookOpen, Target, User, MapPin, Filter, X, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
 import { AllSessionsJoinButton } from "./AllSessionsJoinButton";
+import { RescheduleDialog } from "./RescheduleDialog";
 import { useNavigate, Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -50,13 +51,36 @@ export const AllSessions = () => {
   const [practitionerFilter, setPractitionerFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [showFilters, setShowFilters] = useState<boolean>(false);
+  const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
+  const [sessionToReschedule, setSessionToReschedule] = useState<Session | null>(null);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [sessionToCancel, setSessionToCancel] = useState<Session | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (user) {
       fetchSessions();
       checkIfPractitioner();
+      checkIfAdmin();
     }
   }, [user]);
+
+  const checkIfAdmin = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase.rpc('has_role', {
+        _user_id: user.id,
+        _role: 'admin'
+      });
+      
+      if (!error && data === true) {
+        setIsAdmin(true);
+      }
+    } catch (error) {
+      console.error("Error checking admin role:", error);
+    }
+  };
 
   const checkIfPractitioner = async () => {
     if (!user) return;
@@ -730,6 +754,32 @@ export const AllSessions = () => {
           </div>
         )}
       </CardContent>
+
+      {/* Reschedule Dialog */}
+      <RescheduleDialog
+        open={rescheduleDialogOpen}
+        onOpenChange={setRescheduleDialogOpen}
+        session={sessionToReschedule}
+        onRescheduled={() => {
+          fetchSessions();
+          setRescheduleDialogOpen(false);
+          setSessionToReschedule(null);
+        }}
+        isAdmin={isAdmin}
+      />
+
+      {/* Cancel Dialog */}
+      <CancelSessionDialog
+        open={cancelDialogOpen}
+        onOpenChange={setCancelDialogOpen}
+        session={sessionToCancel}
+        onCancelled={() => {
+          fetchSessions();
+          setCancelDialogOpen(false);
+          setSessionToCancel(null);
+        }}
+        isAdmin={isAdmin}
+      />
     </Card>
   );
 };

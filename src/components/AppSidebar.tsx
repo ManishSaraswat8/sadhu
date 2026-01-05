@@ -26,7 +26,7 @@ const menuItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Journal", url: "/journal", icon: BookOpen },
   { title: "Classes", url: "/sessions", icon: Calendar },
-  { title: "Wallet", url: "/purchases", icon: Receipt },
+  { title: "Wallet", url: "/wallet", icon: Receipt },
   { title: "Step-by-Step", url: "/step-by-step", icon: Video },
   { title: "Contact", url: "/contact", icon: Mail },
 ];

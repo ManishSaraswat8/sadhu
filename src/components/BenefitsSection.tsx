@@ -48,12 +48,9 @@ const BenefitsSection = () => {
             </h2>
           </div>
           
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Who Can Benefit */}
+          <div className="space-y-8">
+            {/* Who Can Benefit - Just Bullet Points */}
             <div className="bg-card border border-primary/20 rounded-2xl p-8 md:p-10 shadow-glow">
-              <h3 className="text-2xl font-heading font-semibold text-foreground mb-6">
-                This Practice Is For You If:
-              </h3>
               <ul className="space-y-4">
                 {[
                   "Those experiencing anxiety or chronic stress",
@@ -71,19 +68,19 @@ const BenefitsSection = () => {
               </ul>
             </div>
 
-            {/* Not For You */}
-            <div className="bg-muted/30 border border-border rounded-2xl p-8 md:p-10">
-              <h3 className="text-2xl font-heading font-semibold text-foreground mb-6">
+            {/* Not For You - Smaller Window */}
+            <div className="bg-muted/30 border border-border rounded-xl p-6 max-w-2xl mx-auto">
+              <h3 className="text-lg font-heading font-semibold text-foreground mb-4">
                 This Practice Is Not For You If:
               </h3>
-              <ul className="space-y-4">
+              <ul className="space-y-3">
                 {[
                   "You prefer purely passive relaxation experiences",
                   "You're unwilling to feel physical sensation as part of growth"
                 ].map((item, index) => (
                   <li key={index} className="flex items-start gap-3">
                     <span className="w-2 h-2 bg-muted-foreground rounded-full mt-2 flex-shrink-0" />
-                    <span className="text-muted-foreground leading-relaxed">{item}</span>
+                    <span className="text-muted-foreground leading-relaxed text-sm">{item}</span>
                   </li>
                 ))}
               </ul>

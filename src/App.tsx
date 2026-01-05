@@ -33,6 +33,7 @@ import BecomePractitioner from "./pages/BecomePractitioner";
 import SessionPayment from "./pages/SessionPayment";
 import BookingConfirmation from "./pages/BookingConfirmation";
 import PurchaseHistory from "./pages/PurchaseHistory";
+import Wallet from "./pages/Wallet";
 import SessionDetail from "./pages/SessionDetail";
 import PurchaseDetail from "./pages/PurchaseDetail";
 import BookSession from "./pages/BookSession";
@@ -81,6 +82,7 @@ const App = () => (
             <Route path="/sessions/payment" element={<SessionPayment />} />
             <Route path="/sessions/:sessionId" element={<SessionDetail />} />
             <Route path="/sessions/confirmation/:sessionId" element={<BookingConfirmation />} />
+            <Route path="/wallet" element={<Wallet />} />
             <Route path="/purchases" element={<PurchaseHistory />} />
             <Route path="/purchases/:purchaseId" element={<PurchaseDetail />} />
             <Route path="/subscribe" element={<Subscribe />} />

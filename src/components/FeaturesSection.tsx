@@ -13,55 +13,55 @@ const FeaturesSection = () => {
           </h2>
         </div>
 
-        <div className="max-w-4xl mx-auto space-y-12">
+        <div className="max-w-4xl mx-auto">
           {/* Introduction */}
-          <div className="text-center">
-            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed mb-4">
+          <div className="text-center mb-12">
+            <p className="text-lg text-muted-foreground leading-relaxed mb-3">
               Sadhu is a simple practice, but it is not a casual one.
             </p>
-            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
+            <p className="text-lg text-muted-foreground leading-relaxed mb-4">
               The intensity of the stimulus requires precision, pacing, and structure - especially for those navigating stress, anxiety, or nervous system overload.
             </p>
-            <p className="text-lg md:text-xl text-foreground font-medium mt-6 leading-relaxed">
+            <p className="text-lg text-foreground font-medium leading-relaxed">
               Guided practice ensures the experience builds regulation rather than reactivity.
             </p>
           </div>
 
-          {/* Session Types */}
-          <div className="grid md:grid-cols-2 gap-8">
+          {/* Session Types - Cleaner Layout */}
+          <div className="grid md:grid-cols-2 gap-6 mb-12">
             {/* 1:1 Sessions */}
-            <div className="group bg-card border border-primary/10 rounded-2xl p-8 hover:border-primary/30 transition-all duration-500 hover:shadow-glow">
-              <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
-                <User className="w-7 h-7 text-primary" />
+            <div className="bg-card border border-primary/10 rounded-xl p-6">
+              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                <User className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="text-xl font-heading font-semibold text-foreground mb-4">
-                1:1 Guided Sessions - Precision & Personalization
+              <h3 className="text-lg font-heading font-semibold text-foreground mb-3">
+                1:1 Guided Sessions
               </h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Private sessions are tailored to the individual. This format is ideal for those who want focused attention, gradual progression, and the extra attention to their inner-personal journey.
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Private sessions tailored to the individual. Ideal for focused attention, gradual progression, and personalized guidance.
               </p>
             </div>
 
             {/* Group Sessions */}
-            <div className="group bg-card border border-primary/10 rounded-2xl p-8 hover:border-primary/30 transition-all duration-500 hover:shadow-glow">
-              <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
-                <Users className="w-7 h-7 text-primary" />
+            <div className="bg-card border border-primary/10 rounded-xl p-6">
+              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                <Users className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="text-xl font-heading font-semibold text-foreground mb-4">
-                Small Group Sessions - Structure & Shared Momentum
+              <h3 className="text-lg font-heading font-semibold text-foreground mb-3">
+                Small Group Sessions
               </h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Group sessions introduce an added layer of accountability and connection. Practicing alongside others creates a stabilizing environment where individuals are supported by shared intention and presence - without comparison or performance. The collective rhythm of the group often helps participants stay grounded and committed to the practice.
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Shared practice with accountability and connection. The collective rhythm helps participants stay grounded and committed.
               </p>
             </div>
           </div>
 
-          {/* What Practitioners Help With */}
-          <div className="bg-card border border-primary/20 rounded-2xl p-8 md:p-12">
-            <h3 className="text-2xl font-heading font-semibold text-foreground mb-6">
-              In both formats, practitioners help you:
+          {/* What Practitioners Help With - Compact */}
+          <div className="bg-card border border-primary/20 rounded-xl p-6 mb-8">
+            <h3 className="text-lg font-heading font-semibold text-foreground mb-4">
+              Practitioners help you:
             </h3>
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 gap-3">
               {[
                 "Establish correct posture and weight distribution",
                 "Regulate breathing as sensation increases",
@@ -69,28 +69,24 @@ const FeaturesSection = () => {
                 "Recognize when to stay, soften, or step off",
                 "Integrate the experience after the session"
               ].map((item, index) => (
-                <div key={index} className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                  <p className="text-muted-foreground leading-relaxed">{item}</p>
+                <div key={index} className="flex items-start gap-2">
+                  <CheckCircle className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                  <p className="text-sm text-muted-foreground leading-relaxed">{item}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Without vs With Guidance */}
-          <div className="space-y-6">
-            <div className="bg-muted/30 border border-border rounded-2xl p-6 md:p-8">
-              <p className="text-muted-foreground leading-relaxed">
-                Without guidance, Sadhu is often approached as an endurance challenge - leading to unnecessary tension, breath holding, or pushing past capacity. This can reinforce stress responses rather than resolve them.
+          {/* Without vs With Guidance - Simplified */}
+          <div className="space-y-4">
+            <div className="bg-muted/30 border border-border rounded-xl p-5">
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Without guidance, Sadhu is often approached as an endurance challenge - leading to unnecessary tension, breath holding, or pushing past capacity.
               </p>
             </div>
-            <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6 md:p-8">
-              <p className="text-foreground leading-relaxed font-medium mb-2">
+            <div className="bg-primary/5 border border-primary/20 rounded-xl p-5">
+              <p className="text-sm text-foreground leading-relaxed font-medium">
                 With guidance - whether personal or shared - the practice becomes a method for training presence, stability, and self-trust.
-              </p>
-              <p className="text-muted-foreground leading-relaxed mt-4">
-                Guidance is not about dependency.<br />
-                It is about learning the skill correctly, within a structure that supports consistency and growth.
               </p>
             </div>
           </div>
