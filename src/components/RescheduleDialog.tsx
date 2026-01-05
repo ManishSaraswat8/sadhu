@@ -209,6 +209,21 @@ export const RescheduleDialog = ({ open, onOpenChange, session, onRescheduled, i
         description: `Your session has been rescheduled to ${format(newScheduledAt, "MMM d, yyyy 'at' h:mm a")}.`,
       });
 
+      // Send reschedule notice email (fire and forget)
+      try {
+        await supabase.functions.invoke('send-cancellation-notice', {
+          body: {
+            session_id: session.id,
+            cancellation_type: 'standard',
+            credit_returned: 0,
+            is_reschedule: true,
+          },
+        });
+      } catch (emailError) {
+        console.error("Failed to send reschedule email:", emailError);
+        // Don't show error to user - email is not critical
+      }
+
       onRescheduled();
       onOpenChange(false);
     } catch (error: any) {

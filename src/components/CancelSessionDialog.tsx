@@ -228,6 +228,21 @@ export const CancelSessionDialog = ({ open, onOpenChange, session, onCancelled, 
         }
       }
 
+      // Send cancellation notice email (fire and forget)
+      try {
+        await supabase.functions.invoke('send-cancellation-notice', {
+          body: {
+            session_id: session.id,
+            cancellation_type: cancellationType,
+            credit_returned: creditToReturn ? 1 : 0,
+            is_reschedule: false,
+          },
+        });
+      } catch (emailError) {
+        console.error("Failed to send cancellation email:", emailError);
+        // Don't show error to user - email is not critical
+      }
+
       onCancelled();
       onOpenChange(false);
       setReason("");

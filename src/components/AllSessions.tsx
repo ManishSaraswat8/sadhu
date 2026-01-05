@@ -11,6 +11,7 @@ import { format } from "date-fns";
 import { Video, Calendar, Clock, Loader2, Download, BookOpen, Target, User, MapPin, Filter, X, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
 import { AllSessionsJoinButton } from "./AllSessionsJoinButton";
 import { RescheduleDialog } from "./RescheduleDialog";
+import { CancelSessionDialog } from "./CancelSessionDialog";
 import { useNavigate, Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 

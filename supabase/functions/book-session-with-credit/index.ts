@@ -189,6 +189,26 @@ serve(async (req) => {
       remaining: creditToUse.credits_remaining - 1 
     });
 
+    // Send booking confirmation email (fire and forget)
+    try {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+      if (supabaseUrl) {
+        fetch(`${supabaseUrl}/functions/v1/send-booking-confirmation`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ session_id: session.id }),
+        }).catch((err) => {
+          logStep("Failed to send booking confirmation email", { error: String(err) });
+        });
+      }
+    } catch (emailError) {
+      logStep("Error triggering booking confirmation email", { error: String(emailError) });
+      // Don't fail the request if email fails
+    }
+
     return new Response(JSON.stringify({ 
       success: true,
       session_id: session.id,

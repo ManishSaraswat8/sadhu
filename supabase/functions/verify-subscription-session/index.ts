@@ -105,6 +105,29 @@ serve(async (req) => {
         }
       });
       logStep("Password reset email sent");
+
+      // Send welcome email (fire and forget)
+      try {
+        const supabaseUrl = Deno.env.get('SUPABASE_URL');
+        if (supabaseUrl) {
+          fetch(`${supabaseUrl}/functions/v1/send-welcome-email`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              user_id: userId,
+              email: customerEmail,
+              name: session.customer_details?.name || null,
+            }),
+          }).catch((err) => {
+            logStep("Failed to send welcome email", { error: String(err) });
+          });
+        }
+      } catch (emailError) {
+        logStep("Error triggering welcome email", { error: String(emailError) });
+      }
     }
 
     return new Response(JSON.stringify({ 

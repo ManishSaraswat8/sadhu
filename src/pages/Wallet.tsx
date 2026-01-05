@@ -31,6 +31,13 @@ interface SessionPackage {
   price_usd: number;
   stripe_price_id_cad: string | null;
   stripe_price_id_usd: string | null;
+  session_type_id: string | null;
+  session_type?: {
+    id: string;
+    duration_minutes: number;
+    session_type: string;
+    is_group: boolean;
+  } | null;
 }
 
 interface UserCredit {
@@ -95,10 +102,18 @@ const Wallet = () => {
       if (typesError) throw typesError;
       setSessionTypes(types || []);
 
-      // Fetch packages
+      // Fetch packages with session type information
       const { data: pkgData, error: pkgError } = await supabase
         .from("session_packages")
-        .select("*")
+        .select(`
+          *,
+          session_type:session_types (
+            id,
+            duration_minutes,
+            session_type,
+            is_group
+          )
+        `)
         .eq("is_active", true)
         .order("session_count", { ascending: true });
 
@@ -322,7 +337,15 @@ const Wallet = () => {
   const renderDurationTab = (duration: 20 | 45 | 60) => {
     const availableCredits = getTotalCreditsForDuration(duration);
     const credits = getCreditsForDuration(duration);
-    const durationPackages = packages; // All packages can be used for any duration
+    
+    // Filter packages: show packages that match this duration OR generic packages (no session_type_id)
+    const durationPackages = packages.filter(pkg => {
+      // Generic packages (no session_type_id) can be used for any duration
+      if (!pkg.session_type_id) return true;
+      // Package-specific packages must match the duration
+      if (pkg.session_type?.duration_minutes === duration) return true;
+      return false;
+    });
 
     return (
       <div className="space-y-6">

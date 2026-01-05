@@ -160,13 +160,37 @@ serve(async (req) => {
             throw creditError;
           }
 
-          logStep("Package credits created", { 
-            userId: metadata.client_id, 
-            packageId,
-            sessionTypeId: creditSessionTypeId,
-            credits: sessionCount,
-            isGeneric: !creditSessionTypeId
-          });
+            logStep("Package credits created", { 
+              userId: metadata.client_id, 
+              packageId,
+              sessionTypeId: creditSessionTypeId,
+              credits: sessionCount,
+              isGeneric: !creditSessionTypeId
+            });
+        }
+
+        // Send payment receipt email (fire and forget)
+        try {
+          const supabaseUrl = Deno.env.get('SUPABASE_URL');
+          if (supabaseUrl) {
+            fetch(`${supabaseUrl}/functions/v1/send-payment-receipt`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                payment_intent_id: session.payment_intent as string || null,
+                checkout_session_id: session.id,
+                user_id: metadata.client_id,
+                email: session.customer_email,
+              }),
+            }).catch((err) => {
+              logStep("Failed to send payment receipt email", { error: String(err) });
+            });
+          }
+        } catch (emailError) {
+          logStep("Error triggering payment receipt email", { error: String(emailError) });
         }
 
         // Calculate payment splits (75% practitioner, 25% platform) - Note: packages don't have practitioner_id
@@ -242,6 +266,49 @@ serve(async (req) => {
           sessionId: sessionData.id, 
           channelName: channelName
         });
+
+        // Send booking confirmation email (fire and forget)
+        try {
+          const supabaseUrl = Deno.env.get('SUPABASE_URL');
+          if (supabaseUrl) {
+            fetch(`${supabaseUrl}/functions/v1/send-booking-confirmation`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ session_id: sessionData.id }),
+            }).catch((err) => {
+              logStep("Failed to send booking confirmation email", { error: String(err) });
+            });
+          }
+        } catch (emailError) {
+          logStep("Error triggering booking confirmation email", { error: String(emailError) });
+        }
+
+        // Send payment receipt email (fire and forget)
+        try {
+          const supabaseUrl = Deno.env.get('SUPABASE_URL');
+          if (supabaseUrl) {
+            fetch(`${supabaseUrl}/functions/v1/send-payment-receipt`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                payment_intent_id: session.payment_intent as string || null,
+                checkout_session_id: session.id,
+                user_id: metadata.client_id,
+                email: session.customer_email,
+              }),
+            }).catch((err) => {
+              logStep("Failed to send payment receipt email", { error: String(err) });
+            });
+          }
+        } catch (emailError) {
+          logStep("Error triggering payment receipt email", { error: String(emailError) });
+        }
 
         // Calculate payment splits (75% practitioner, 25% platform)
         const practitionerShare = totalAmount * 0.75;

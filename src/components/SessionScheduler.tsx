@@ -152,8 +152,14 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
 
   const initialState = loadStateFromURL();
   
+  // Default to today's date if no date is provided
+  const getInitialDate = () => {
+    if (initialState.date) return initialState.date;
+    return new Date();
+  };
+  
   const [selectedPractitioner, setSelectedPractitioner] = useState<Practitioner | null>(null);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(initialState.date);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(getInitialDate());
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [selectedTime, setSelectedTime] = useState<string | null>(initialState.time);
   const [selectedDuration, setSelectedDuration] = useState<20 | 45 | 60>(initialState.duration);
@@ -255,7 +261,7 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
       if (error) {
         console.error("Error fetching studio locations:", error);
       } else {
-        setStudioLocations((data || []) as Array<{ id: string; name: string; address: string; city?: string; province_state?: string; country?: string; postal_code?: string }>);
+        setStudioLocations((data || []) as unknown as Array<{ id: string; name: string; address: string; city?: string; province_state?: string; country?: string; postal_code?: string }>);
       }
     } catch (error) {
       console.error("Error fetching studio locations:", error);
@@ -367,7 +373,18 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
     if (isGroup) {
       // For group sessions, fetch all available pre-scheduled classes
       fetchAvailableGroupClasses();
-    } else if (selectedPractitioner && selectedDate) {
+    } else if (selectedPractitioner) {
+      // If practitioner is selected but no date, set today's date
+      if (!selectedDate) {
+        const today = new Date();
+        setSelectedDate(today);
+      }
+    }
+  }, [selectedPractitioner, isGroup, sessionLocation]);
+
+  // Separate effect to generate time slots when both practitioner and date are available
+  useEffect(() => {
+    if (!isGroup && selectedPractitioner && selectedDate) {
       // For 1:1 sessions, generate time slots based on practitioner availability
       generateTimeSlots();
       fetchCorrelatedSessions();
@@ -1554,7 +1571,11 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
                       <Calendar
                         mode="single"
                         selected={selectedDate}
-                        onSelect={setSelectedDate}
+                        onSelect={(date) => {
+                          if (date) {
+                            setSelectedDate(date);
+                          }
+                        }}
                         disabled={(date) => isBefore(date, startOfDay(new Date()))}
                         className="rounded-md border"
                       />

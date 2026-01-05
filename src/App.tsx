@@ -34,6 +34,7 @@ import SessionPayment from "./pages/SessionPayment";
 import BookingConfirmation from "./pages/BookingConfirmation";
 import PurchaseHistory from "./pages/PurchaseHistory";
 import Wallet from "./pages/Wallet";
+import Newsletter from "./pages/Newsletter";
 import SessionDetail from "./pages/SessionDetail";
 import PurchaseDetail from "./pages/PurchaseDetail";
 import BookSession from "./pages/BookSession";
@@ -99,6 +100,7 @@ const App = () => (
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/sadhu-board-info" element={<SadhuBoardInfo />} />
             <Route path="/become-practitioner" element={<BecomePractitioner />} />
+            <Route path="/newsletter" element={<Newsletter />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/practitioners" element={<AdminPractitioners />} />
             <Route path="/admin/users" element={<AdminUsers />} />

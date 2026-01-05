@@ -1,8 +1,53 @@
 import { Link } from "react-router-dom";
-import { Instagram } from "lucide-react";
+import { Instagram, Mail, Loader2, CheckCircle2 } from "lucide-react";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import sadhuLogo from "@/assets/sadhu-logo.png";
 
 const Footer = () => {
+  const { toast } = useToast();
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [subscribing, setSubscribing] = useState(false);
+  const [subscribed, setSubscribed] = useState(false);
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail.trim()) return;
+
+    setSubscribing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('subscribe-newsletter', {
+        body: {
+          email: newsletterEmail.trim(),
+          source: 'footer',
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        setSubscribed(true);
+        toast({
+          title: "Subscribed!",
+          description: data.message || "You've been subscribed to our newsletter!",
+        });
+        setNewsletterEmail("");
+        setTimeout(() => setSubscribed(false), 3000);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to subscribe. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSubscribing(false);
+    }
+  };
+
   return (
     <footer className="bg-card border-t border-border py-16">
       <div className="container mx-auto px-6">
@@ -20,6 +65,41 @@ const Footer = () => {
             >
               <Instagram className="h-6 w-6" />
             </a>
+            
+            {/* Newsletter Signup */}
+            <div className="space-y-2 pt-4">
+              <h5 className="font-medium text-sm text-foreground">Newsletter</h5>
+              <form onSubmit={handleNewsletterSubmit} className="flex gap-2">
+                <Input
+                  type="email"
+                  placeholder="Your email"
+                  value={newsletterEmail}
+                  onChange={(e) => setNewsletterEmail(e.target.value)}
+                  className="h-9 text-sm"
+                  disabled={subscribing || subscribed}
+                  required
+                />
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={subscribing || subscribed || !newsletterEmail.trim()}
+                  className="h-9"
+                >
+                  {subscribed ? (
+                    <CheckCircle2 className="w-4 h-4" />
+                  ) : subscribing ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Mail className="w-4 h-4" />
+                  )}
+                </Button>
+              </form>
+              <p className="text-xs text-muted-foreground">
+                <Link to="/newsletter" className="hover:text-primary transition-colors">
+                  Subscribe to our newsletter
+                </Link>
+              </p>
+            </div>
           </div>
 
           <div className="space-y-4">

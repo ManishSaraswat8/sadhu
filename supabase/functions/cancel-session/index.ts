@@ -206,6 +206,30 @@ serve(async (req) => {
       credit_returned: creditReturned
     });
 
+    // Send cancellation notice email (fire and forget)
+    try {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+      if (supabaseUrl) {
+        fetch(`${supabaseUrl}/functions/v1/send-cancellation-notice`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            session_id: session_id,
+            cancellation_type: cancellationType,
+            credit_returned: creditReturned,
+            is_reschedule: false,
+          }),
+        }).catch((err) => {
+          logStep("Failed to send cancellation notice email", { error: String(err) });
+        });
+      }
+    } catch (emailError) {
+      logStep("Error triggering cancellation notice email", { error: String(emailError) });
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
