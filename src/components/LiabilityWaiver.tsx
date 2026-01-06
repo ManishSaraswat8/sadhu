@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, AlertTriangle } from "lucide-react";
@@ -17,7 +16,7 @@ interface LiabilityWaiverProps {
 }
 
 export const LiabilityWaiver = ({ sessionId, onSigned, onCancel }: LiabilityWaiverProps) => {
-  const [agreed, setAgreed] = useState(false);
+  const [waiverCompleted, setWaiverCompleted] = useState(false);
   const [signing, setSigning] = useState(false);
   const { toast } = useToast();
 
@@ -26,13 +25,13 @@ export const LiabilityWaiver = ({ sessionId, onSigned, onCancel }: LiabilityWaiv
     queryKey: ["waiver-policy"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("waiver_policy")
+        .from("waiver_policy" as never)
         .select("*")
         .eq("is_active", true)
         .single();
 
       if (error && error.code !== 'PGRST116') throw error;
-      return data;
+      return data as any;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
@@ -47,10 +46,10 @@ export const LiabilityWaiver = ({ sessionId, onSigned, onCancel }: LiabilityWaiv
   };
 
   const handleSign = async () => {
-    if (!agreed) {
+    if (!waiverCompleted) {
       toast({
-        title: "Agreement Required",
-        description: "Please read and agree to the liability waiver to continue.",
+        title: "Waiver Required",
+        description: "Please complete the waiver in the form above and confirm below.",
         variant: "destructive",
       });
       return;
@@ -140,7 +139,7 @@ export const LiabilityWaiver = ({ sessionId, onSigned, onCancel }: LiabilityWaiv
           Liability Waiver Required
         </CardTitle>
         <CardDescription>
-          Please read and agree to the liability waiver before proceeding with your session booking.
+          Please sign the digital waiver before proceeding with your session booking.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -151,24 +150,39 @@ export const LiabilityWaiver = ({ sessionId, onSigned, onCancel }: LiabilityWaiv
           </AlertDescription>
         </Alert>
 
-        <ScrollArea className="h-[400px] w-full rounded-md border p-4">
-          <div className="whitespace-pre-wrap text-sm text-muted-foreground leading-relaxed">
-            {getWaiverText()}
+        {/* SmartWaiver iframe */}
+        <div className="space-y-4">
+          <div className="border-2 border-primary/30 rounded-lg bg-primary/5 p-4">
+            <p className="text-sm font-medium text-foreground mb-3 text-center">
+              Sign the Digital Waiver Below
+            </p>
+            <div className="border border-border rounded-lg overflow-hidden bg-white">
+              <iframe
+                src="https://waiver.smartwaiver.com/w/ep4bgmdkenazyz8ugsphrn/web/"
+                className="w-full h-[600px] border-0"
+                title="Digital Waiver"
+                allow="camera; microphone"
+                sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground mt-3 text-center">
+              After completing the waiver above, check the confirmation below and click "I Confirm & Continue".
+            </p>
           </div>
-        </ScrollArea>
+        </div>
 
-        <div className="flex items-start space-x-2 pt-4 border-t">
+        {/* Confirmation Checkbox */}
+        <div className="flex items-center space-x-2 pt-4 border-t">
           <Checkbox
-            id="waiver-agreement"
-            checked={agreed}
-            onCheckedChange={(checked) => setAgreed(checked === true)}
-            className="mt-1"
+            id="waiver-completed"
+            checked={waiverCompleted}
+            onCheckedChange={(checked) => setWaiverCompleted(checked === true)}
           />
           <Label
-            htmlFor="waiver-agreement"
+            htmlFor="waiver-completed"
             className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
           >
-            I have read, understood, and agree to the terms of this liability waiver. I acknowledge that I am signing this waiver voluntarily and that I understand the risks involved.
+            I confirm that I have completed and signed the digital waiver in the form above.
           </Label>
         </div>
 
@@ -185,16 +199,16 @@ export const LiabilityWaiver = ({ sessionId, onSigned, onCancel }: LiabilityWaiv
           )}
           <Button
             onClick={handleSign}
-            disabled={!agreed || signing}
+            disabled={!waiverCompleted || signing}
             className="flex-1"
           >
             {signing ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Signing...
+                Confirming...
               </>
             ) : (
-              "I Agree & Sign Waiver"
+              "I Confirm & Continue"
             )}
           </Button>
         </div>

@@ -31,7 +31,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { Loader2, Plus, Link2, Unlink, Calendar, Video, MapPin, Users, Search, Check, X } from "lucide-react";
+import { Loader2, Plus, Link2, Unlink, Calendar, Video, MapPin, Users, Search, Check, X, Trash2 } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Session = Tables<"session_schedules"> & {
@@ -64,7 +64,7 @@ export const AdminGroupSessions = () => {
   const [onlineSessionId, setOnlineSessionId] = useState<string>('');
   const [inPersonSessionId, setInPersonSessionId] = useState<string>('');
 
-  // Form state for creating group sessions
+  // Form state for creating group classes
   const [groupPractitionerId, setGroupPractitionerId] = useState<string>('');
   const [groupDate, setGroupDate] = useState<string>('');
   const [groupTime, setGroupTime] = useState<string>('');
@@ -74,12 +74,14 @@ export const AdminGroupSessions = () => {
   const [groupPhysicalLocation, setGroupPhysicalLocation] = useState<string>('');
   const [groupClassName, setGroupClassName] = useState<string>('');
   const [practitioners, setPractitioners] = useState<any[]>([]);
+  const [studioLocations, setStudioLocations] = useState<Array<{ id: string; name: string; address: string; city?: string; province_state?: string; country?: string; postal_code?: string }>>([]);
   const [editingSession, setEditingSession] = useState<Session | null>(null);
   const [editingClassName, setEditingClassName] = useState<string>('');
 
   useEffect(() => {
     fetchSessions();
     fetchPractitioners();
+    fetchStudioLocations();
   }, [filter]);
 
   const fetchPractitioners = async () => {
@@ -94,6 +96,24 @@ export const AdminGroupSessions = () => {
       setPractitioners(data || []);
     } catch (error: any) {
       console.error("Error fetching practitioners:", error);
+    }
+  };
+
+  const fetchStudioLocations = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("studio_locations" as any)
+        .select("*")
+        .eq("is_active", true)
+        .order("name", { ascending: true });
+
+      if (error) {
+        console.error("Error fetching studio locations:", error);
+      } else {
+        setStudioLocations((data || []) as unknown as Array<{ id: string; name: string; address: string; city?: string; province_state?: string; country?: string; postal_code?: string }>);
+      }
+    } catch (error) {
+      console.error("Error fetching studio locations:", error);
     }
   };
 
@@ -119,6 +139,11 @@ export const AdminGroupSessions = () => {
             )
           )
         `)
+        // Only show master group classes (created by admin), not individual booking records
+        // Master classes have notes "Pre-scheduled group class created by admin" or null
+        // Individual bookings have notes "Joined group class: ..."
+        .gt("max_participants", 1) // Only group classes
+        .not("notes", "like", "Joined group class%") // Exclude individual booking records
         .order("scheduled_at", { ascending: false });
 
       // Apply filter
@@ -130,7 +155,92 @@ export const AdminGroupSessions = () => {
 
       const { data, error } = await query;
 
-      if (error) throw error;
+      if (error) {
+        console.error("========== [ADMIN FETCH ERROR] ==========");
+        console.error("Error fetching sessions:", error);
+        console.error("Error details:", {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        });
+        throw error;
+      }
+      
+      console.log("========== [ADMIN FETCH SESSIONS] ==========");
+      console.log("Fetched sessions:", data?.length || 0);
+      console.log("Query filters applied:", {
+        max_participants: "> 1",
+        notes_filter: "NOT like 'Joined group class%'",
+        filter: filter
+      });
+      
+      if (data && data.length > 0) {
+        console.log("========== [RAW ADMIN SESSION DATA] ==========");
+        console.log("Full raw data array:", JSON.stringify(data, null, 2));
+        console.log("========== [PARSED ADMIN SESSION DATA] ==========");
+        data.forEach((session: any, index: number) => {
+          console.log(`Session ${index + 1}:`, {
+            id: session.id,
+            scheduled_at: session.scheduled_at,
+            practitioner_id: session.practitioner_id,
+            client_id: session.client_id,
+            max_participants: session.max_participants,
+            current_participants: session.current_participants,
+            session_location: session.session_location,
+            physical_location: session.physical_location,
+            status: session.status,
+            notes: session.notes,
+            class_name: session.class_name,
+            duration_minutes: session.duration_minutes,
+            practitioner: session.practitioner ? {
+              name: session.practitioner.name
+            } : "No practitioner data",
+            correlated_session: session.correlated_session ? {
+              id: session.correlated_session.id,
+              scheduled_at: session.correlated_session.scheduled_at,
+              session_location: session.correlated_session.session_location
+            } : null,
+            full_object: session // Log the complete object
+          });
+        });
+        console.log("========== [END PARSED ADMIN SESSION DATA] ==========");
+        
+        // Also query ALL group classes directly to compare
+        console.log("========== [VERIFICATION QUERY] ==========");
+        console.log("[ADMIN] Querying ALL group classes (no filters) to verify database state...");
+        const { data: allGroupClasses, error: allClassesError } = await supabase
+          .from("session_schedules")
+          .select("id, scheduled_at, current_participants, max_participants, notes, client_id, practitioner_id, status")
+          .gt("max_participants", 1)
+          .order("scheduled_at", { ascending: false })
+          .limit(20);
+        
+        if (allClassesError) {
+          console.error("[ADMIN ERROR] Error fetching all group classes:", allClassesError);
+        } else {
+          console.log("[ADMIN] Total group classes in database (all):", allGroupClasses?.length || 0);
+          console.log("[ADMIN] All group classes (raw):", JSON.stringify(allGroupClasses, null, 2));
+          allGroupClasses?.forEach((cls: any, idx: number) => {
+            console.log(`[ADMIN] Group Class ${idx + 1}:`, {
+              id: cls.id,
+              scheduled_at: cls.scheduled_at,
+              current_participants: cls.current_participants,
+              max_participants: cls.max_participants,
+              notes: cls.notes,
+              client_id: cls.client_id,
+              practitioner_id: cls.practitioner_id,
+              status: cls.status,
+              is_master: !cls.notes || !cls.notes.startsWith("Joined group class"),
+              is_individual_booking: cls.notes?.startsWith("Joined group class") || false
+            });
+          });
+        }
+        console.log("========== [END VERIFICATION QUERY] ==========");
+      } else {
+        console.log("No sessions found matching the query filters");
+      }
+      
       setSessions((data as any) || []);
     } catch (error: any) {
       console.error("Error fetching sessions:", error);
@@ -258,7 +368,7 @@ export const AdminGroupSessions = () => {
         throw new Error("No admin user found for placeholder");
       }
 
-      // Create group session
+      // Create group class
       const sessionData: any = {
         practitioner_id: groupPractitionerId,
         client_id: placeholderClientId, // Placeholder - will be replaced when clients join
@@ -297,7 +407,7 @@ export const AdminGroupSessions = () => {
       setGroupClassName('');
       await fetchSessions();
     } catch (error: any) {
-      console.error("Error creating group session:", error);
+      console.error("Error creating group class:", error);
       toast({
         title: "Error",
         description: error.message || "Could not create group class.",
@@ -374,6 +484,49 @@ export const AdminGroupSessions = () => {
     }
   };
 
+  const handleDeleteSession = async (sessionId: string) => {
+    if (!confirm("Are you sure you want to delete this group class? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      // First, remove correlation if it exists
+      const session = sessions.find(s => s.id === sessionId);
+      if (session?.correlated_session_id) {
+        const { error: correlationError } = await supabase
+          .from("session_schedules")
+          .update({ correlated_session_id: null })
+          .eq("id", session.correlated_session_id);
+
+        if (correlationError) {
+          console.error("Error removing correlation:", correlationError);
+        }
+      }
+
+      // Delete the session
+      const { error } = await supabase
+        .from("session_schedules")
+        .delete()
+        .eq("id", sessionId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Group Class Deleted",
+        description: "The group class has been successfully deleted.",
+      });
+
+      await fetchSessions();
+    } catch (error: any) {
+      console.error("Error deleting session:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Could not delete group class.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const filteredSessions = sessions.filter(session => {
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
@@ -395,14 +548,14 @@ export const AdminGroupSessions = () => {
   );
 
   return (
-    <AdminLayout title="Group Session Correlation">
+    <AdminLayout title="Group Class Correlation">
       <div className="space-y-6">
         {/* Header Actions */}
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           <div>
-            <h2 className="text-2xl font-heading font-bold">Group Session Management</h2>
+            <h2 className="text-2xl font-heading font-bold">Group Class Management</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Link online and in-person sessions to create correlated group sessions
+              Link online and in-person classes to create correlated group classes
             </p>
           </div>
           <div className="flex gap-2">
@@ -513,13 +666,46 @@ export const AdminGroupSessions = () => {
 
                   {groupLocation === 'in_person' && (
                     <div>
-                      <Label htmlFor="group-physical-location">Physical Location *</Label>
-                      <Input
-                        id="group-physical-location"
-                        placeholder="Enter studio address"
-                        value={groupPhysicalLocation}
-                        onChange={(e) => setGroupPhysicalLocation(e.target.value)}
-                      />
+                      <Label htmlFor="group-physical-location">Studio Location *</Label>
+                      {studioLocations.length === 0 ? (
+                        <div className="space-y-2">
+                          <Input
+                            id="group-physical-location"
+                            placeholder="Enter studio address"
+                            value={groupPhysicalLocation}
+                            onChange={(e) => setGroupPhysicalLocation(e.target.value)}
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            No studio locations available. Enter address manually or add studio locations in Settings.
+                          </p>
+                        </div>
+                      ) : (
+                        <Select 
+                          value={groupPhysicalLocation} 
+                          onValueChange={(value) => {
+                            const selectedLocation = studioLocations.find(loc => loc.id === value || `${loc.name} - ${loc.address}` === value);
+                            if (selectedLocation) {
+                              // Store the formatted location string
+                              setGroupPhysicalLocation(`${selectedLocation.name} - ${selectedLocation.address}`);
+                            } else {
+                              setGroupPhysicalLocation(value);
+                            }
+                          }}
+                        >
+                          <SelectTrigger id="group-physical-location">
+                            <SelectValue placeholder="Select studio location" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {studioLocations.map((location) => (
+                              <SelectItem key={location.id} value={`${location.name} - ${location.address}`}>
+                                {location.name} - {location.address}
+                                {location.city && `, ${location.city}`}
+                                {location.province_state && `, ${location.province_state}`}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
                     </div>
                   )}
 
@@ -570,7 +756,7 @@ export const AdminGroupSessions = () => {
               <DialogHeader>
                 <DialogTitle>Create Session Correlation</DialogTitle>
                 <DialogDescription>
-                  Link an online session with an in-person session to create a correlated group session.
+                  Link an online class with an in-person class to create a correlated group class.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
@@ -807,18 +993,30 @@ export const AdminGroupSessions = () => {
                         )}
                       </TableCell>
                       <TableCell>
-                        {session.correlated_session ? (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleRemoveCorrelation(session.id)}
-                          >
-                            <Unlink className="w-4 h-4 mr-2" />
-                            Unlink
-                          </Button>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">-</span>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {session.correlated_session ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleRemoveCorrelation(session.id)}
+                            >
+                              <Unlink className="w-4 h-4 mr-2" />
+                              Unlink
+                            </Button>
+                          ) : (
+                            <span className="text-sm text-muted-foreground">-</span>
+                          )}
+                          {(session.max_participants || 1) > 1 && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDeleteSession(session.id)}
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}

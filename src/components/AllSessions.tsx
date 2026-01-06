@@ -23,6 +23,12 @@ interface Session {
   session_location?: string;
   physical_location?: string | null;
   room_name: string;
+  max_participants?: number | null;
+  current_participants?: number | null;
+  notes?: string | null;
+  class_name?: string | null;
+  practitioner_id?: string | null;
+  client_id?: string | null;
   practitioner: {
     name: string;
     avatar_url: string | null;
@@ -100,6 +106,8 @@ export const AllSessions = () => {
 
     try {
       setLoading(true);
+      console.log("========== [ALL SESSIONS FETCH] ==========");
+      console.log("[ALL SESSIONS] Fetching sessions for user:", user.id);
       
       // Fetch sessions as client
       const { data: clientSessions, error: clientError } = await supabase
@@ -112,6 +120,10 @@ export const AllSessions = () => {
           session_location,
           physical_location,
           room_name,
+          max_participants,
+          current_participants,
+          notes,
+          class_name,
           practitioner:practitioners (
             name,
             avatar_url,
@@ -123,12 +135,48 @@ export const AllSessions = () => {
         .order("scheduled_at", { ascending: false });
 
       if (clientError) {
-        console.error("Error fetching client sessions:", clientError);
+        console.error("[ALL SESSIONS ERROR] Error fetching client sessions:", clientError);
+        console.error("[ALL SESSIONS ERROR] Error details:", {
+          message: clientError.message,
+          code: clientError.code,
+          details: clientError.details,
+          hint: clientError.hint
+        });
         toast({
           title: "Error",
           description: "Could not load sessions. Please refresh the page.",
           variant: "destructive",
         });
+      } else {
+        console.log("[ALL SESSIONS] Client sessions fetched:", clientSessions?.length || 0);
+        if (clientSessions && clientSessions.length > 0) {
+          console.log("========== [RAW CLIENT SESSIONS DATA] ==========");
+          console.log("Full raw client sessions array:", clientSessions);
+          console.log("========== [PARSED CLIENT SESSIONS] ==========");
+          clientSessions.forEach((session: any, index: number) => {
+            console.log(`Client Session ${index + 1}:`, {
+              id: session.id,
+              scheduled_at: session.scheduled_at,
+              duration_minutes: session.duration_minutes,
+              status: session.status,
+              session_location: session.session_location,
+              physical_location: session.physical_location,
+              max_participants: session.max_participants,
+              current_participants: session.current_participants,
+              notes: session.notes,
+              class_name: session.class_name,
+              practitioner_id: session.practitioner_id,
+              client_id: session.client_id,
+              practitioner: session.practitioner ? {
+                name: session.practitioner.name,
+                avatar_url: session.practitioner.avatar_url,
+                user_id: session.practitioner.user_id
+              } : "No practitioner data",
+              full_object: session // Complete object
+            });
+          });
+          console.log("========== [END PARSED CLIENT SESSIONS] ==========");
+        }
       }
 
       // Also fetch sessions as practitioner
@@ -140,6 +188,7 @@ export const AllSessions = () => {
 
       let practitionerSessions: Session[] = [];
       if (practitionerData) {
+        console.log("[ALL SESSIONS] Fetching practitioner sessions for practitioner_id:", practitionerData.id);
         const { data, error: practitionerError } = await supabase
           .from("session_schedules")
           .select(`
@@ -150,6 +199,10 @@ export const AllSessions = () => {
             session_location,
             physical_location,
             room_name,
+            max_participants,
+            current_participants,
+            notes,
+            class_name,
             practitioner:practitioners (
               name,
               avatar_url,
@@ -159,6 +212,40 @@ export const AllSessions = () => {
           .eq("practitioner_id", practitionerData.id)
           .in("status", ["scheduled", "in_progress", "completed"])
           .order("scheduled_at", { ascending: false });
+        
+        if (practitionerError) {
+          console.error("[ALL SESSIONS ERROR] Error fetching practitioner sessions:", practitionerError);
+        } else {
+          console.log("[ALL SESSIONS] Practitioner sessions fetched:", data?.length || 0);
+          if (data && data.length > 0) {
+            console.log("========== [RAW PRACTITIONER SESSIONS DATA] ==========");
+            console.log("Full raw practitioner sessions array:", data);
+            console.log("========== [PARSED PRACTITIONER SESSIONS] ==========");
+            data.forEach((session: any, index: number) => {
+              console.log(`Practitioner Session ${index + 1}:`, {
+                id: session.id,
+                scheduled_at: session.scheduled_at,
+                duration_minutes: session.duration_minutes,
+                status: session.status,
+                session_location: session.session_location,
+                physical_location: session.physical_location,
+                max_participants: session.max_participants,
+                current_participants: session.current_participants,
+                notes: session.notes,
+                class_name: session.class_name,
+                practitioner_id: session.practitioner_id,
+                client_id: session.client_id,
+                practitioner: session.practitioner ? {
+                  name: session.practitioner.name,
+                  avatar_url: session.practitioner.avatar_url,
+                  user_id: session.practitioner.user_id
+                } : "No practitioner data",
+                full_object: session // Complete object
+              });
+            });
+            console.log("========== [END PARSED PRACTITIONER SESSIONS] ==========");
+          }
+        }
         
         if (!practitionerError && data) {
           practitionerSessions = (data as unknown as Session[]);
@@ -191,6 +278,24 @@ export const AllSessions = () => {
       const sortedSessions = sessionsWithRecordings.sort((a, b) => 
         new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime()
       );
+      
+      console.log("[ALL SESSIONS] Final combined sessions (after deduplication and sorting):", sortedSessions.length);
+      console.log("========== [FINAL COMBINED SESSIONS] ==========");
+      sortedSessions.forEach((session: any, index: number) => {
+        console.log(`Final Session ${index + 1}:`, {
+          id: session.id,
+          scheduled_at: session.scheduled_at,
+          max_participants: session.max_participants,
+          current_participants: session.current_participants,
+          notes: session.notes,
+          session_location: session.session_location,
+          physical_location: session.physical_location,
+          status: session.status,
+          full_object: session
+        });
+      });
+      console.log("========== [END ALL SESSIONS FETCH] ==========");
+      
       setAllSessions(sortedSessions);
       setSessions(sortedSessions);
     } catch (error) {

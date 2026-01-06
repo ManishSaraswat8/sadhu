@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,9 +10,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { format, addDays, setHours, setMinutes, isBefore, isAfter, startOfDay } from "date-fns";
-import { Loader2, Clock, User, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Package, Video, MapPin, Users, User as UserIcon, Link2, FileText, ShoppingCart } from "lucide-react";
+import { Loader2, Clock, User, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Package, Video, MapPin, Users, User as UserIcon, Link2, FileText, ShoppingCart, AlertTriangle } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -21,10 +23,20 @@ import { LiabilityWaiver } from "@/components/LiabilityWaiver";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useQuery } from "@tanstack/react-query";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 // Component for displaying waiver already signed message
 const WaiverAlreadySigned = ({ onContinue }: { onContinue: () => void }) => {
-  const [showPolicy, setShowPolicy] = useState(false);
+  const [waiverCompleted, setWaiverCompleted] = useState(false);
 
   // Fetch active waiver policy from backend
   const { data: waiverPolicy, isLoading: loadingPolicy } = useQuery({
@@ -52,50 +64,70 @@ const WaiverAlreadySigned = ({ onContinue }: { onContinue: () => void }) => {
   };
 
   return (
-    <>
-      <div className="p-6 bg-primary/10 border border-primary/30 rounded-lg text-center">
-        <p className="text-sm font-medium text-primary mb-2">✓ Waiver Already Signed</p>
-        <p className="text-xs text-muted-foreground">
-          You have already signed the liability waiver. You can proceed with booking.
+    <div className="space-y-4">
+      <Alert>
+        <AlertTriangle className="h-4 w-4" />
+        <AlertDescription>
+          Please sign the digital waiver below to proceed with your booking.
+        </AlertDescription>
+      </Alert>
+
+      {/* SmartWaiver iframe */}
+      <div className="border-2 border-primary/30 rounded-lg bg-primary/5 p-4">
+        <p className="text-sm font-medium text-foreground mb-3 text-center">
+          Sign the Digital Waiver Below
         </p>
-        <div className="flex gap-2 mt-4">
-          <Button 
-            variant="outline"
-            className="flex-1" 
-            onClick={() => setShowPolicy(true)}
-          >
-            <FileText className="w-4 h-4 mr-2" />
-            View Policy
-          </Button>
-          <Button 
-            className="flex-1" 
-            onClick={onContinue}
-          >
-            Continue to Confirmation
-            <ChevronRight className="w-4 h-4 ml-2" />
-          </Button>
+        <div className="border border-border rounded-lg overflow-hidden bg-white">
+          <iframe
+            src="https://waiver.smartwaiver.com/w/ep4bgmdkenazyz8ugsphrn/web/"
+            className="w-full h-[600px] border-0"
+            title="Digital Waiver"
+            allow="camera; microphone"
+            sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
+          />
         </div>
+        <p className="text-xs text-muted-foreground mt-3 text-center">
+          After completing the waiver above, check the confirmation below and click "Continue to Confirmation".
+        </p>
       </div>
 
-      <Dialog open={showPolicy} onOpenChange={setShowPolicy}>
-        <DialogContent className="max-w-3xl max-h-[80vh]">
-          <DialogHeader>
-            <DialogTitle>Liability Waiver Policy</DialogTitle>
-          </DialogHeader>
-          <ScrollArea className="h-[60vh] w-full rounded-md border p-4">
-            {loadingPolicy ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin text-primary" />
-              </div>
-            ) : (
-              <div className="whitespace-pre-wrap text-sm text-muted-foreground leading-relaxed">
-                {getWaiverText() || "Unable to load waiver policy."}
-              </div>
-            )}
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
-    </>
+      {/* Confirmation Checkbox */}
+      <div className="flex items-center space-x-2 pt-4 border-t">
+        <Checkbox
+          id="waiver-completed-already-signed"
+          checked={waiverCompleted}
+          onCheckedChange={(checked) => setWaiverCompleted(checked === true)}
+        />
+        <Label
+          htmlFor="waiver-completed-already-signed"
+          className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+        >
+          I confirm that I have completed and signed the digital waiver in the form above.
+        </Label>
+      </div>
+
+      <div className="flex gap-2 pt-4">
+        <Button 
+          variant="outline"
+          className="flex-1" 
+          onClick={() => {
+            // Go back to previous step
+            window.history.back();
+          }}
+        >
+          <ChevronLeft className="w-4 h-4 mr-2" />
+          Back
+        </Button>
+        <Button 
+          className="flex-1" 
+          onClick={onContinue}
+          disabled={!waiverCompleted}
+        >
+          Continue to Confirmation
+          <ChevronRight className="w-4 h-4 ml-2" />
+        </Button>
+      </div>
+    </div>
   );
 };
 
@@ -136,6 +168,7 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
     const urlIsGroup = searchParams.get('is_group');
     const urlLocation = searchParams.get('session_location');
     const urlPhysicalLocation = searchParams.get('physical_location');
+    const urlGroupSessionId = searchParams.get('group_session_id');
 
     return {
       step: urlStep || 'sessionType',
@@ -147,6 +180,7 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
       isGroup: urlIsGroup === 'true',
       location: (urlLocation as 'online' | 'in_person') || 'online',
       physicalLocation: urlPhysicalLocation || '',
+      groupSessionId: urlGroupSessionId,
     };
   };
 
@@ -189,6 +223,7 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
     isGroup?: boolean;
     location?: 'online' | 'in_person';
     physicalLocation?: string;
+    groupSessionId?: string | null;
   }) => {
     const newParams = new URLSearchParams(searchParams);
     
@@ -227,6 +262,10 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
       if (updates.physicalLocation) newParams.set('physical_location', updates.physicalLocation);
       else newParams.delete('physical_location');
     }
+    if (updates.groupSessionId !== undefined) {
+      if (updates.groupSessionId) newParams.set('group_session_id', updates.groupSessionId);
+      else newParams.delete('group_session_id');
+    }
     
     setSearchParams(newParams, { replace: true });
   };
@@ -242,7 +281,26 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
   const [availableGroupClasses, setAvailableGroupClasses] = useState<any[]>([]);
   const [selectedGroupSession, setSelectedGroupSession] = useState<any | null>(null);
   const [correlatedSessions, setCorrelatedSessions] = useState<Map<string, any>>(new Map());
+  const [showBookingConfirmation, setShowBookingConfirmation] = useState(false);
   const { currency, formatPrice } = useCurrency();
+
+  // Filter group classes by selected studio location for in-person sessions
+  const filteredInPersonGroupClasses = useMemo(() => {
+    if (!selectedStudioLocation || sessionLocation !== 'in_person') return [];
+    
+    const selectedLocation = studioLocations.find(loc => loc.id === selectedStudioLocation);
+    const selectedLocationString = selectedLocation ? `${selectedLocation.name} - ${selectedLocation.address}` : selectedStudioLocation;
+    
+    return availableGroupClasses.filter((c: any) => {
+      if (c.session_location !== 'in_person') return false;
+      // Match by formatted string (how it's stored in DB) or by checking if physical_location contains the studio name/address
+      return c.physical_location === selectedLocationString || 
+             (selectedLocation && (
+               c.physical_location?.includes(selectedLocation.name) ||
+               c.physical_location?.includes(selectedLocation.address)
+             ));
+    });
+  }, [selectedStudioLocation, sessionLocation, studioLocations, availableGroupClasses]);
 
   useEffect(() => {
     fetchSessionTypes();
@@ -369,11 +427,53 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
     }
   };
 
+  // Load group session from URL if present
   useEffect(() => {
-    if (isGroup) {
-      // For group sessions, fetch all available pre-scheduled classes
-      fetchAvailableGroupClasses();
-    } else if (selectedPractitioner) {
+    const urlGroupSessionId = searchParams.get('group_session_id');
+    if (urlGroupSessionId && !selectedGroupSession && isGroup) {
+      // Fetch the group session from available classes
+      const loadGroupSession = async () => {
+        const { data, error } = await supabase
+          .from("session_schedules")
+          .select(`
+            *,
+            practitioner:practitioners!session_schedules_practitioner_id_fkey (
+              id,
+              name,
+              bio,
+              specialization,
+              avatar_url,
+              user_id
+            )
+          `)
+          .eq("id", urlGroupSessionId)
+          .gt("max_participants", 1)
+          .neq("status", "cancelled")
+          .single();
+
+        if (!error && data) {
+          const scheduledDate = new Date(data.scheduled_at);
+          setSelectedGroupSession(data);
+          // Convert practitioner to Practitioner type
+          if (data.practitioner) {
+            setSelectedPractitioner({
+              ...data.practitioner,
+              half_hour_rate: null, // Group classes don't use hourly rates
+            } as Practitioner);
+          }
+          setSelectedDate(scheduledDate);
+          setSelectedTime(format(scheduledDate, "HH:mm"));
+        }
+      };
+      loadGroupSession();
+    }
+  }, [searchParams, isGroup, selectedGroupSession]);
+
+  useEffect(() => {
+    // Always fetch group classes when location changes, so they're available when user selects "Group Class"
+    fetchAvailableGroupClasses();
+    
+    if (!isGroup && selectedPractitioner) {
       // If practitioner is selected but no date, set today's date
       if (!selectedDate) {
         const today = new Date();
@@ -585,13 +685,12 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
 
   // Fetch all available pre-scheduled group classes (admin-created)
   const fetchAvailableGroupClasses = async () => {
-    if (!isGroup) {
-      setAvailableGroupClasses([]);
-      return;
-    }
+    // Always fetch group classes, regardless of isGroup state
+    // This allows users to see available classes when they select "Group Class" option
+    console.log("Fetching group classes...", { isGroup, sessionLocation });
 
     try {
-      // Fetch all group sessions (max_participants > 1) that:
+      // Fetch all group classes (max_participants > 1) that:
       // 1. Are scheduled in the future
       // 2. Have available spots
       // 3. Match the selected session type and duration
@@ -608,6 +707,7 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
           session_location,
           physical_location,
           class_name,
+          status,
           practitioner:practitioners (
             id,
             name,
@@ -616,16 +716,110 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
             avatar_url
           )
         `)
-        .gt("max_participants", 1) // Group sessions only
+        .gt("max_participants", 1) // Group classes only
         .gte("scheduled_at", now.toISOString())
         .neq("status", "cancelled")
         .order("scheduled_at", { ascending: true });
+
+      // Filter by location if specified
+      if (sessionLocation) {
+        query = query.eq("session_location", sessionLocation);
+        console.log("Filtering by location:", sessionLocation);
+      }
+
+      console.log("Executing query with filters:", {
+        max_participants: "> 1",
+        scheduled_at: `>= ${now.toISOString()}`,
+        status: "!= cancelled",
+        session_location: sessionLocation || "all"
+      });
 
       const { data, error } = await query;
 
       if (error) {
         console.error("Error fetching group classes:", error);
+        console.error("Error details:", {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        });
+        toast({
+          title: "Error Loading Classes",
+          description: error.message || "Could not load group classes. Please try again.",
+          variant: "destructive",
+        });
         return;
+      }
+
+      console.log("========== [FETCH GROUP CLASSES] ==========");
+      console.log("Fetched group classes:", data?.length || 0, "classes");
+      console.log("Query filters:", {
+        max_participants: "> 1",
+        scheduled_at: `>= ${now.toISOString()}`,
+        status: "!= cancelled",
+        session_location: sessionLocation || "all"
+      });
+      
+      if (data && data.length > 0) {
+        console.log("========== [RAW DATABASE DATA] ==========");
+        console.log("Full raw data array:", data);
+        console.log("========== [PARSED CLASS DATA] ==========");
+        data.forEach((c: any, index: number) => {
+          console.log(`Class ${index + 1}:`, {
+            id: c.id,
+            scheduled_at: c.scheduled_at,
+            duration_minutes: c.duration_minutes,
+            max_participants: c.max_participants,
+            current_participants: c.current_participants,
+            session_location: c.session_location,
+            physical_location: c.physical_location,
+            status: c.status,
+            notes: c.notes,
+            class_name: c.class_name,
+            practitioner_id: c.practitioner_id,
+            client_id: c.client_id,
+            practitioner: c.practitioner ? {
+              id: c.practitioner.id,
+              name: c.practitioner.name,
+              bio: c.practitioner.bio,
+              specialization: c.practitioner.specialization,
+              avatar_url: c.practitioner.avatar_url
+            } : "No practitioner data",
+            full_object: c // Log the complete object
+          });
+        });
+        console.log("========== [END PARSED CLASS DATA] ==========");
+      } else {
+        console.log("No classes returned. Possible reasons:");
+        console.log("- No classes with max_participants > 1");
+        console.log("- All classes are in the past");
+        console.log("- All classes are cancelled");
+        console.log("- RLS policy blocking access");
+        console.log("- Location filter excluding all classes");
+        console.log("- Practitioner relationship failing");
+        
+        // Test query without practitioner relationship to see if that's the issue
+        console.log("Testing query without practitioner relationship...");
+        const { data: testData, error: testError } = await supabase
+          .from("session_schedules")
+          .select("id, scheduled_at, max_participants, current_participants, session_location, status")
+          .gt("max_participants", 1)
+          .gte("scheduled_at", now.toISOString())
+          .neq("status", "cancelled")
+          .limit(5);
+        
+        if (testError) {
+          console.error("Test query error:", testError);
+        } else {
+          console.log("Test query returned:", testData?.length || 0, "classes");
+          if (testData && testData.length > 0) {
+            console.log("Test classes:", testData);
+            console.log("Issue: Practitioner relationship is likely failing");
+          } else {
+            console.log("Issue: RLS policy or data filters are blocking access");
+          }
+        }
       }
 
       // Filter by session type and duration if selected
@@ -781,6 +975,20 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
       return;
     }
 
+    // Show confirmation dialog before booking
+    setShowBookingConfirmation(true);
+  };
+
+  const confirmBookingWithCredit = async () => {
+    console.log("User confirmed booking with credit", {
+      isGroup,
+      selectedGroupSession: selectedGroupSession?.id,
+      selectedPractitioner: selectedPractitioner?.id,
+      selectedDate,
+      selectedTime,
+    });
+    
+    setShowBookingConfirmation(false);
     setBooking(true);
 
     try {
@@ -791,7 +999,7 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
       let physicalLoc: string | null = null;
 
       if (isGroup && selectedGroupSession) {
-        // For group sessions, use the selected group class details
+        // For group classes, use the selected group class details
         scheduledAt = new Date(selectedGroupSession.scheduled_at);
         practitionerId = selectedGroupSession.practitioner?.id || selectedGroupSession.practitioner_id;
         duration = selectedGroupSession.duration_minutes || selectedDuration;
@@ -814,36 +1022,229 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
       }
 
       if (isGroup && selectedGroupSession) {
-        // For group sessions, join existing session (increment participant count)
-        // First, increment the participant count on the master group session
-        const { error: updateError } = await supabase
-          .from("session_schedules")
-          .update({
-            current_participants: (selectedGroupSession.current_participants || 0) + 1,
-          })
-          .eq("id", selectedGroupSession.id);
+        // For group classes, join existing class (increment participant count)
+        // First, increment the participant count on the master group class
+        console.log("========== [BOOKING START] ==========");
+        console.log("[BOOKING] Selected Group Session:", {
+          id: selectedGroupSession.id,
+          scheduled_at: selectedGroupSession.scheduled_at,
+          current_participants: selectedGroupSession.current_participants,
+          max_participants: selectedGroupSession.max_participants,
+          session_location: selectedGroupSession.session_location,
+          physical_location: selectedGroupSession.physical_location,
+          notes: selectedGroupSession.notes,
+        });
+        console.log("[BOOKING] User ID:", user!.id);
+        console.log("[BOOKING] Scheduled at:", scheduledAt.toISOString());
+        
+        const newParticipantCount = (selectedGroupSession.current_participants || 0) + 1;
+        console.log("[BOOKING] Updating participant count from", selectedGroupSession.current_participants || 0, "to", newParticipantCount);
+        
+        // Use RPC function to update participant count to bypass RLS issues
+        // This ensures the update works even if RLS policies are restrictive
+        console.log("[BOOKING] Attempting to increment participant count via RPC...");
+        const { data: rpcData, error: rpcError } = await supabase.rpc('increment_group_class_participants' as any, {
+          group_class_id: selectedGroupSession.id,
+          increment_by: 1
+        });
 
-        if (updateError) throw updateError;
+        let updateData: any = null;
+        let updateError: any = null;
 
-        // Create a booking record for this user (links them to the group session)
-        // Use the same room_name so they join the same video room
-        const { error: bookingError } = await supabase
+        if (rpcError) {
+          console.warn("[BOOKING] RPC function error:", rpcError);
+          console.log("[BOOKING] Falling back to direct update...");
+          // Fall back to direct update if RPC doesn't exist or fails
+          const directUpdate = await supabase
+            .from("session_schedules")
+            .update({
+              current_participants: newParticipantCount,
+            })
+            .eq("id", selectedGroupSession.id)
+            .select();
+          
+          updateData = directUpdate.data;
+          updateError = directUpdate.error;
+        } else {
+          // RPC succeeded, format the response to match expected structure
+          console.log("[BOOKING] RPC succeeded, response:", rpcData);
+          const rpcArray = Array.isArray(rpcData) ? rpcData : (rpcData ? [rpcData] : []);
+          updateData = rpcArray.length > 0 ? [{
+            id: rpcArray[0]?.id,
+            current_participants: rpcArray[0]?.current_participants,
+            max_participants: rpcArray[0]?.max_participants,
+            notes: selectedGroupSession.notes,
+            client_id: selectedGroupSession.client_id,
+          }] : null;
+          updateError = null;
+        }
+
+        if (updateError) {
+          console.error("[BOOKING ERROR] Error updating group class participants:", updateError);
+          console.error("[BOOKING ERROR] Update error details:", {
+            message: updateError.message,
+            code: updateError.code,
+            details: updateError.details,
+            hint: updateError.hint
+          });
+          throw new Error(`Failed to join group class: ${updateError.message}`);
+        }
+
+        console.log("[BOOKING] Update query response:", updateData);
+        console.log("[BOOKING] Update query response length:", updateData?.length || 0);
+        
+        if (updateData && updateData.length > 0) {
+          console.log("[BOOKING] Updated session data:", {
+            id: updateData[0].id,
+            current_participants: updateData[0].current_participants,
+            max_participants: updateData[0].max_participants,
+            notes: updateData[0].notes,
+            client_id: updateData[0].client_id,
+          });
+          
+          if (updateData[0].current_participants !== newParticipantCount) {
+            console.error("[BOOKING ERROR] Participant count mismatch! Expected:", newParticipantCount, "Got:", updateData[0].current_participants);
+          } else {
+            console.log("[BOOKING SUCCESS] Participant count correctly updated to:", updateData[0].current_participants);
+          }
+        } else {
+          console.error("[BOOKING ERROR] Update query returned no data! This means the update was blocked by RLS or failed silently.");
+          console.error("[BOOKING ERROR] This could mean:");
+          console.error("  1. RLS policy 'Users can update group classes to join' is not working");
+          console.error("  2. The session ID doesn't match");
+          console.error("  3. The session is cancelled or doesn't have max_participants > 1");
+        }
+
+        // Create a booking record for this user (links them to the group class)
+        // Use a unique room_name per user (required by DB constraint) but they'll join the same Agora channel
+        const baseRoomName = selectedGroupSession.room_name || `group-${selectedGroupSession.id}`;
+        const uniqueRoomName = `${baseRoomName}-${user!.id.substring(0, 8)}-${Date.now()}`;
+        console.log("[BOOKING] Creating individual booking record with room:", uniqueRoomName);
+        console.log("[BOOKING] Individual booking details:", {
+          practitioner_id: practitionerId,
+          client_id: user!.id,
+          scheduled_at: scheduledAt.toISOString(),
+          duration_minutes: duration,
+          session_location: location,
+          physical_location: physicalLoc,
+          max_participants: selectedGroupSession.max_participants || 1,
+          notes: `Joined group class: ${selectedGroupSession.id}`,
+        });
+        
+        const { data: bookingData, error: bookingError } = await supabase
           .from("session_schedules")
           .insert({
             practitioner_id: practitionerId,
             client_id: user!.id,
             scheduled_at: scheduledAt.toISOString(),
             duration_minutes: duration,
-            room_name: selectedGroupSession.room_name || `group-${selectedGroupSession.id}`,
+            room_name: uniqueRoomName, // Unique per user (DB constraint), but maps to same Agora channel
             max_participants: selectedGroupSession.max_participants || 1,
             current_participants: 1, // Individual entry, but part of the group
             session_location: location,
             physical_location: physicalLoc,
             status: "scheduled",
             notes: `Joined group class: ${selectedGroupSession.id}`,
-          });
+          })
+          .select();
 
-        if (bookingError) throw bookingError;
+        if (bookingError) {
+          console.error("[BOOKING ERROR] Error creating individual booking:", bookingError);
+          console.error("[BOOKING ERROR] Booking error details:", {
+            message: bookingError.message,
+            code: bookingError.code,
+            details: bookingError.details,
+            hint: bookingError.hint
+          });
+          // Rollback the participant count increment if booking fails
+          console.log("[BOOKING] Rolling back participant count to:", selectedGroupSession.current_participants || 0);
+          await supabase
+            .from("session_schedules")
+            .update({
+              current_participants: (selectedGroupSession.current_participants || 0),
+            })
+            .eq("id", selectedGroupSession.id);
+          throw new Error(`Failed to create booking: ${bookingError.message}`);
+        }
+
+        console.log("[BOOKING] Individual booking created:", bookingData);
+        if (bookingData && bookingData.length > 0) {
+          console.log("[BOOKING] Individual booking ID:", bookingData[0].id);
+        }
+        
+        // Verify the master group class was updated correctly
+        console.log("[BOOKING] Verifying master group class update...");
+        console.log("[BOOKING] Waiting 500ms before verification...");
+        await new Promise(resolve => setTimeout(resolve, 500)); // Small delay to ensure DB consistency
+        
+        const { data: verifyData, error: verifyError } = await supabase
+          .from("session_schedules")
+          .select("id, current_participants, max_participants, notes, client_id, practitioner_id")
+          .eq("id", selectedGroupSession.id)
+          .single();
+        
+        if (verifyError) {
+          console.error("[BOOKING ERROR] Error verifying update:", verifyError);
+          console.error("[BOOKING ERROR] Verify error details:", {
+            message: verifyError.message,
+            code: verifyError.code,
+            details: verifyError.details,
+            hint: verifyError.hint
+          });
+        } else {
+          console.log("[BOOKING] Master group class after update:", {
+            id: verifyData.id,
+            current_participants: verifyData.current_participants,
+            max_participants: verifyData.max_participants,
+            notes: verifyData.notes,
+            client_id: verifyData.client_id,
+            practitioner_id: verifyData.practitioner_id,
+          });
+          
+          if (verifyData.current_participants === (selectedGroupSession.current_participants || 0)) {
+            console.warn("[BOOKING WARNING] Participant count was NOT updated! Still showing:", verifyData.current_participants);
+            console.warn("[BOOKING WARNING] This suggests the UPDATE query may have been blocked by RLS or failed silently.");
+          } else {
+            console.log("[BOOKING SUCCESS] Participant count successfully updated from", selectedGroupSession.current_participants || 0, "to", verifyData.current_participants);
+          }
+        }
+        
+        // Also check all group classes to see their current state
+        console.log("[BOOKING] Fetching all group classes to verify state...");
+        const { data: allGroupClasses, error: allClassesError } = await supabase
+          .from("session_schedules")
+          .select("id, scheduled_at, current_participants, max_participants, notes, session_location, physical_location")
+          .gt("max_participants", 1)
+          .neq("status", "cancelled")
+          .order("scheduled_at", { ascending: false })
+          .limit(10);
+        
+        if (allClassesError) {
+          console.error("[BOOKING ERROR] Error fetching all group classes:", allClassesError);
+        } else {
+          console.log("[BOOKING] All group classes in database:", allGroupClasses?.map((c: any) => ({
+            id: c.id,
+            scheduled_at: c.scheduled_at,
+            current_participants: c.current_participants,
+            max_participants: c.max_participants,
+            notes: c.notes,
+            session_location: c.session_location,
+            physical_location: c.physical_location,
+          })));
+        }
+        
+        console.log("========== [BOOKING END] ==========");
+
+        // Update selectedGroupSession with new participant count
+        if (updateData && updateData[0]) {
+          setSelectedGroupSession({
+            ...selectedGroupSession,
+            current_participants: updateData[0].current_participants,
+          });
+        }
+
+        // Refresh available group classes to show updated participant counts
+        await fetchAvailableGroupClasses();
 
         // Deduct credit for joining the group class
         // Find an available credit
@@ -881,6 +1282,27 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
           }
         }
 
+        // Update selectedGroupSession with new participant count
+        if (updateData && updateData[0]) {
+          const updatedCount = updateData[0].current_participants;
+          setSelectedGroupSession({
+            ...selectedGroupSession,
+            current_participants: updatedCount,
+          });
+          
+          // Immediately update the availableGroupClasses state to reflect the new count
+          setAvailableGroupClasses((prevClasses) =>
+            prevClasses.map((cls: any) =>
+              cls.id === selectedGroupSession.id
+                ? { ...cls, current_participants: updatedCount }
+                : cls
+            )
+          );
+        }
+
+        // Refresh available group classes to show updated participant counts (in case of other changes)
+        await fetchAvailableGroupClasses();
+
         toast({
           title: "Class Joined!",
           description: "You have successfully joined the group class.",
@@ -917,6 +1339,11 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
 
       // Refresh credits
       checkCredits();
+
+      // Refresh group classes to show updated participant counts (before navigating away)
+      if (isGroup) {
+        await fetchAvailableGroupClasses();
+      }
 
       // Reset state
       setSelectedPractitioner(null);
@@ -975,7 +1402,7 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
       let physicalLoc: string | null = null;
 
       if (isGroup && selectedGroupSession) {
-        // For group sessions, use the selected group class details
+        // For group classes, use the selected group class details
         scheduledAt = new Date(selectedGroupSession.scheduled_at);
         practitionerId = selectedGroupSession.practitioner?.id || selectedGroupSession.practitioner_id;
         duration = selectedGroupSession.duration_minutes || selectedDuration;
@@ -1049,10 +1476,21 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
               variant="ghost" 
               size="sm"
               onClick={() => {
-                if (step === 'confirm') updateStep('waiver');
-                else if (step === 'waiver') updateStep('datetime');
-                else if (step === 'datetime') updateStep('practitioner');
-                else if (step === 'practitioner') updateStep('sessionType');
+                if (step === 'confirm') {
+                  updateStep('waiver');
+                } else if (step === 'waiver') {
+                  updateStep('datetime');
+                } else if (step === 'datetime') {
+                  // For group classes, go back to sessionType (skips practitioner step)
+                  // For 1:1 sessions, go back to practitioner step
+                  if (isGroup) {
+                    updateStep('sessionType');
+                  } else {
+                    updateStep('practitioner');
+                  }
+                } else if (step === 'practitioner') {
+                  updateStep('sessionType');
+                }
               }}
             >
               <ChevronLeft className="w-4 h-4 mr-1" />
@@ -1229,16 +1667,14 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
                     <>
                       <div>
                         <p className="text-sm font-medium mb-3">Available Group Classes</p>
-                        {availableGroupClasses.filter((c: any) => c.session_location === 'in_person' && c.physical_location === selectedStudioLocation).length === 0 ? (
+                        {filteredInPersonGroupClasses.length === 0 ? (
                           <div className="text-center py-8 text-muted-foreground border border-dashed rounded-lg">
                             <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
                             <p>No group classes scheduled at this location</p>
                           </div>
                         ) : (
                           <div className="space-y-3 max-h-[400px] overflow-y-auto">
-                        {availableGroupClasses
-                          .filter((c: any) => c.session_location === 'in_person' && (selectedStudioLocation ? c.physical_location === selectedStudioLocation : true))
-                              .map((groupClass: any) => {
+                            {filteredInPersonGroupClasses.map((groupClass: any) => {
                                 const scheduledDate = new Date(groupClass.scheduled_at);
                                 const spotsLeft = (groupClass.max_participants || 1) - (groupClass.current_participants || 0);
                                 
@@ -1477,6 +1913,8 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
                               setSelectedPractitioner(groupClass.practitioner);
                               setSelectedDate(scheduledDate);
                               setSelectedTime(format(scheduledDate, "HH:mm"));
+                              // Update URL with group session ID
+                              updateURL({ groupSessionId: groupClass.id });
                             }}
                           >
                             <CardContent className="p-4">
@@ -1683,6 +2121,9 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
           <div className="space-y-6">
             {/* Correlated Session Notice */}
             {(() => {
+              // Only check for correlated sessions for 1:1 sessions (not group classes)
+              if (isGroup || !selectedTime || !selectedDate) return null;
+              
               // Check if there's a correlated session available for this time slot
               const [hours, minutes] = selectedTime.split(":").map(Number);
               const slotTime = setMinutes(setHours(selectedDate, hours), minutes);
@@ -1853,6 +2294,54 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
                   )}
                 </Button>
                 </div>
+
+                {/* Booking Confirmation Dialog */}
+                <AlertDialog open={showBookingConfirmation} onOpenChange={setShowBookingConfirmation}>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Confirm Booking</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {isGroup && selectedGroupSession ? (
+                          <>
+                            Are you sure you want to book this group class?
+                            <br />
+                            <br />
+                            <strong>Class:</strong> {format(new Date(selectedGroupSession.scheduled_at), "EEEE, MMMM d, yyyy 'at' h:mm a")}
+                            <br />
+                            <strong>Duration:</strong> {selectedGroupSession.duration_minutes || selectedDuration} minutes
+                            <br />
+                            <strong>Location:</strong> {selectedGroupSession.session_location === 'online' ? 'Online' : selectedGroupSession.physical_location || 'In-Person'}
+                            <br />
+                            <br />
+                            This will use one of your session credits.
+                          </>
+                        ) : (
+                          <>
+                            Are you sure you want to book this session?
+                            <br />
+                            <br />
+                            <strong>Practitioner:</strong> {selectedPractitioner?.name}
+                            <br />
+                            <strong>Date & Time:</strong> {selectedDate && selectedTime ? format(setMinutes(setHours(selectedDate, parseInt(selectedTime.split(':')[0])), parseInt(selectedTime.split(':')[1])), "EEEE, MMMM d, yyyy 'at' h:mm a") : 'N/A'}
+                            <br />
+                            <strong>Duration:</strong> {selectedDuration} minutes
+                            <br />
+                            <strong>Location:</strong> {sessionLocation === 'online' ? 'Online' : physicalLocation || 'In-Person'}
+                            <br />
+                            <br />
+                            This will use one of your session credits.
+                          </>
+                        )}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={confirmBookingWithCredit}>
+                        Confirm Booking
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             ) : (
               <Button 

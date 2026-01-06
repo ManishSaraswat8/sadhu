@@ -80,7 +80,7 @@ export const OnlineSessions = () => {
       <div>
         <h1 className="text-3xl font-heading font-light mb-2">Online Sessions</h1>
         <p className="text-muted-foreground">
-          Book 1:1 or group sessions with experienced practitioners
+          Book 1:1 sessions or group classes with experienced practitioners
         </p>
       </div>
 
@@ -101,7 +101,7 @@ export const OnlineSessions = () => {
             <CardHeader>
               <CardTitle>Book an Online Session</CardTitle>
               <CardDescription>
-                Choose from 1:1 or group sessions. Select Standing or Laying practice.
+                Choose from 1:1 sessions or group classes. Select Standing or Laying practice.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -132,7 +132,7 @@ export const OnlineSessions = () => {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Users className="w-5 h-5 text-primary" />
-                  Group Sessions
+                  Group Classes
                 </CardTitle>
               </CardHeader>
               <CardContent>

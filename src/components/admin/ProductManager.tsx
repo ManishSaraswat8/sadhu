@@ -112,7 +112,7 @@ export function ProductManager() {
         ],
         formats: formats?.options || [
           { value: false, label: "1:1 Session" },
-          { value: true, label: "Group Session" }
+          { value: true, label: "Group Class" }
         ],
       };
 
@@ -918,7 +918,7 @@ function EditSessionTypeForm({
             )) || (
               <>
                 <option value="false">1:1 Session</option>
-                <option value="true">Group Session</option>
+                <option value="true">Group Class</option>
               </>
             )}
           </select>

@@ -172,9 +172,9 @@ export function SessionConfigForm({ config, onConfigUpdated }: SessionConfigForm
     },
     {
       id: "isGroup",
-      label: "Group Session",
+      label: "Group Class",
       type: "switch",
-      placeholder: "Enable if this is a group session format",
+      placeholder: "Enable if this is a group class format",
       defaultValue: false,
     },
   ];
@@ -315,7 +315,7 @@ export function SessionConfigForm({ config, onConfigUpdated }: SessionConfigForm
         onOpenChange={setFormatDialogOpen}
         onConfirm={handleAddFormat}
         title="Add Session Format"
-        description="Enter the format label and select if it's a group session"
+        description="Enter the format label and select if it's a group class"
         fields={formatFields}
         confirmText="Add Format"
         cancelText="Cancel"

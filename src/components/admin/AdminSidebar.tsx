@@ -42,7 +42,7 @@ const navItems: NavItem[] = [
   { icon: Package, label: "Products", href: "/admin/products" },
   { icon: ShoppingCart, label: "Orders", href: "/admin/orders" },
   { icon: CreditCard, label: "Subscriptions", href: "/admin/subscriptions" },
-  { icon: Link2, label: "Group Sessions", href: "/admin/group-sessions" },
+  { icon: Link2, label: "Group Classes", href: "/admin/group-sessions" },
   { icon: Video, label: "Videos", href: "/admin/videos" },
   { icon: FileText, label: "Policies", href: "/admin/policies" },
 ];

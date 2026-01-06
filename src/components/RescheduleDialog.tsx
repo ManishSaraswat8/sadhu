@@ -14,8 +14,8 @@ interface Session {
   id: string;
   scheduled_at: string;
   duration_minutes: number;
-  practitioner_id: string;
-  client_id: string;
+  practitioner_id?: string | null;
+  client_id?: string | null;
   status: string;
 }
 

@@ -42,13 +42,13 @@ const FeaturesSection = () => {
               </p>
             </div>
 
-            {/* Group Sessions */}
+            {/* Group Classes */}
             <div className="bg-card border border-primary/10 rounded-xl p-6">
               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
                 <Users className="w-6 h-6 text-primary" />
               </div>
               <h3 className="text-lg font-heading font-semibold text-foreground mb-3">
-                Small Group Sessions
+                Small Group Classes
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 Shared practice with accountability and connection. The collective rhythm helps participants stay grounded and committed.

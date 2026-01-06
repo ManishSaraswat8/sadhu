@@ -102,7 +102,7 @@ export const InPersonSessions = () => {
             <CardHeader>
               <CardTitle>Book an In-Person Session</CardTitle>
               <CardDescription>
-                Choose from 1:1 or group sessions at our studio locations.
+                Choose from 1:1 sessions or group classes at our studio locations.
               </CardDescription>
             </CardHeader>
             <CardContent>
