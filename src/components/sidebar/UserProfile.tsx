@@ -49,9 +49,6 @@ export function UserProfile() {
         headers: {
           Authorization: `Bearer ${sessionData.session.access_token}`,
         },
-        headers: {
-          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
       });
       setCreditsCount(creditsData?.total_credits || 0);
 

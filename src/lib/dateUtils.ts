@@ -1,5 +1,4 @@
-import { format, formatInTimeZone } from "date-fns";
-import { utcToZonedTime, zonedTimeToUtc } from "date-fns-tz";
+import { formatInTimeZone, toZonedTime, fromZonedTime } from "date-fns-tz";
 
 /**
  * Eastern Time Zone identifier
@@ -9,11 +8,11 @@ const EST_TIMEZONE = "America/New_York";
 /**
  * Convert a date to Eastern Time (EST/EDT)
  * @param date - Date to convert (can be Date object or ISO string)
- * @returns Date object in Eastern Time
+ * @returns Date object representing the same moment in Eastern Time
  */
 export function toEasternTime(date: Date | string): Date {
   const dateObj = typeof date === "string" ? new Date(date) : date;
-  return utcToZonedTime(dateObj, EST_TIMEZONE);
+  return toZonedTime(dateObj, EST_TIMEZONE);
 }
 
 /**
@@ -22,7 +21,7 @@ export function toEasternTime(date: Date | string): Date {
  * @returns Date object in UTC
  */
 export function fromEasternTime(date: Date): Date {
-  return zonedTimeToUtc(date, EST_TIMEZONE);
+  return fromZonedTime(date, EST_TIMEZONE);
 }
 
 /**
