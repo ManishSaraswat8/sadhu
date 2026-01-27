@@ -50,7 +50,7 @@ const AboutSection = () => {
           <div className="bg-muted/20 rounded-2xl border border-border/30 p-8 md:p-12">
             <div className={`prose prose-lg max-w-none text-muted-foreground leading-relaxed space-y-4 ${!isStoryExpanded ? 'line-clamp-6' : ''}`}>
               <p>
-                Our work began during a period of reassessment. For several years, my focus was almost exclusively on financial performance through futures trading. That focus delivered results for a time, but it also came at a cost. When that chapter ended, it became clear that I had deprioritized important areas of life - relationships, emotional awareness, and long-term direction.
+                Our work began during a period of reassessment. For several years, my focus was almost exclusively on financial performance and materialistic life. It delivered results for a time, but at what cost? I had deprioritized nearly every other area of my life - relationships, long-term direction, emotional poise, and inner peace.
               </p>
               
               <p>
@@ -64,24 +64,7 @@ const AboutSection = () => {
                   </p>
 
                   <p>
-                    Emotions I had buried surfaced. Old beliefs about my worth unraveled. It was painful - but it was also the first honest confrontation I'd had with myself in years. In that discomfort, I felt something rare: clarity. And with clarity came movement. I started taking real action toward the life I actually wanted - not the one I was performing for the world. Both my mental and physical health improved. After months of insomnia, full night of sleep felt like a return to life. I'll never forget the feeling.
-                  </p>
-
-                  <p className="border-l-4 border-primary pl-6 py-2 italic bg-primary/5 rounded-r-lg">
-                    What I learned is simple: You will never change your circumstances if you avoid facing yourself. And the pain of staying the same is far greater than the temporary discomfort of the nail board.
-                  </p>
-
-                  <p>
-                    As I continued researching, practicing, and studying this ancient method, I realized how many people must be silently struggling the way I was - disconnected, overwhelmed, and unsure where to turn. The Sadhu board didn't just transform my inner world; it rebuilt my confidence, my discipline, my emotional resilience, and the way I show up in every relationship.
-                  </p>
-
-                  <p className="font-medium text-foreground">
-                    I knew then that this wasn't something to keep to myself.
-                  </p>
-
-                  <p className="text-center text-xl md:text-2xl font-heading italic text-foreground mt-8 leading-relaxed">
-                    This is more than a tool.<br />
-                    <span className="block mt-2">It's the beginning of a new chapter - one built on truth, courage, and the belief that healing is not only possible... it's within reach for everyone.</span>
+                    Imagine understanding the deepest depths of your emotions, all meanwhile training your nervous system to stay regulated. One realization was that my life never really felt like mine. My reality felt molded by external forces which my nervous system turned into unresolved internal battles. Suddenly I recognized the patterns, habits, and thoughts that needed an update in order to live life as myself. Since childhood I've felt a calling to make a tangible human impact—and what better way to do that than through the very thing that transformed both my physical and mental health. I'll never forget the morning I woke up feeling fully rested after months of insomnia. It's been a bitter sweet recognizing the disconnect and overwhelm in others. I hope you too will find stillness and calm through Sadhu.
                   </p>
                 </>
               )}

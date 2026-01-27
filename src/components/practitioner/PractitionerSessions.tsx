@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format, isToday } from "date-fns";
+import { formatDateEastern, formatTimeEastern } from "@/lib/dateUtils";
 import { Video, Calendar, Clock, X, Loader2, Crown, Plus, Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { PractitionerSessionCreator } from "@/components/PractitionerSessionCreator";
@@ -190,11 +191,11 @@ export const PractitionerSessions = ({ practitionerId }: PractitionerSessionsPro
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
-                      {format(new Date(session.scheduled_at), "MMM d, yyyy")}
+                      {formatDateEastern(session.scheduled_at, "MMM d, yyyy")}
                     </span>
                     <span className="flex items-center gap-1">
                       <Clock className="w-3 h-3" />
-                      {format(new Date(session.scheduled_at), "h:mm a")}
+                      {formatTimeEastern(session.scheduled_at, "h:mm a")}
                     </span>
                   </div>
                   {session.notes && (

@@ -4,7 +4,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Eye, EyeOff, Mail, Lock, User, ArrowLeft } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, Phone, Calendar, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import sadhuLogo from "@/assets/sadhu-logo.png";
 
@@ -19,6 +20,9 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [address, setAddress] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Get redirect URL from query params
@@ -137,7 +141,7 @@ const Auth = () => {
           return;
         }
         
-        const { error } = await signUp(email, password, name);
+        const { error } = await signUp(email, password, name, phoneNumber, dateOfBirth, address);
         if (error) {
           if (error.message.includes("already registered")) {
             toast({
@@ -240,24 +244,82 @@ const Auth = () => {
             <>
               <form onSubmit={handleSubmit} className="space-y-6">
                 {mode === 'signup' && (
-                  <div className="space-y-2">
-                    <label htmlFor="name" className="text-sm text-foreground font-medium">
-                      Full Name
-                    </label>
-                    <div className="relative">
-                      <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                      <Input
-                        id="name"
-                        type="text"
-                        placeholder="Enter your name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        className="pl-12"
-                        required={mode === 'signup'}
-                        disabled={isSubmitting}
-                      />
+                  <>
+                    <div className="space-y-2">
+                      <label htmlFor="name" className="text-sm text-foreground font-medium">
+                        Full Name
+                      </label>
+                      <div className="relative">
+                        <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                        <Input
+                          id="name"
+                          type="text"
+                          placeholder="Enter your full name"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          className="pl-12"
+                          required
+                          disabled={isSubmitting}
+                        />
+                      </div>
                     </div>
-                  </div>
+
+                    <div className="space-y-2">
+                      <label htmlFor="phone" className="text-sm text-foreground font-medium">
+                        Phone Number
+                      </label>
+                      <div className="relative">
+                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                        <Input
+                          id="phone"
+                          type="tel"
+                          placeholder="Enter your phone number"
+                          value={phoneNumber}
+                          onChange={(e) => setPhoneNumber(e.target.value)}
+                          className="pl-12"
+                          required
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label htmlFor="dob" className="text-sm text-foreground font-medium">
+                        Date of Birth
+                      </label>
+                      <div className="relative">
+                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                        <Input
+                          id="dob"
+                          type="date"
+                          value={dateOfBirth}
+                          onChange={(e) => setDateOfBirth(e.target.value)}
+                          className="pl-12"
+                          required
+                          disabled={isSubmitting}
+                          max={new Date().toISOString().split('T')[0]}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label htmlFor="address" className="text-sm text-foreground font-medium">
+                        Address
+                      </label>
+                      <div className="relative">
+                        <MapPin className="absolute left-4 top-3 w-5 h-5 text-muted-foreground" />
+                        <Textarea
+                          id="address"
+                          placeholder="Enter your address"
+                          value={address}
+                          onChange={(e) => setAddress(e.target.value)}
+                          className="pl-12 min-h-[100px]"
+                          required
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                    </div>
+                  </>
                 )}
 
                 <div className="space-y-2">

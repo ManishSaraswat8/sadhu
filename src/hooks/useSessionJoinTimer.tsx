@@ -48,12 +48,12 @@ export function useSessionJoinTimer(scheduledAt: string, durationMinutes: number
           setMinutesUntilJoin(minutesUntil);
           setTimeUntilJoin(formatTimeRemaining(msUntil));
         } else {
-          // After session window
+          // After class
           setTimeUntilJoin(null);
           setMinutesUntilJoin(null);
         }
       } else {
-        // In session window
+        // In class
         setTimeUntilJoin(null);
         setMinutesUntilJoin(null);
       }

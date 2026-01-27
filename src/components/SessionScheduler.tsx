@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { format, addDays, setHours, setMinutes, isBefore, isAfter, startOfDay } from "date-fns";
+import { formatEasternTime, formatDateTimeEastern, formatDateEastern, formatTimeEastern } from "@/lib/dateUtils";
 import { Loader2, Clock, User, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Package, Video, MapPin, Users, User as UserIcon, Link2, FileText, ShoppingCart, AlertTriangle } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -462,7 +463,7 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
             } as Practitioner);
           }
           setSelectedDate(scheduledDate);
-          setSelectedTime(format(scheduledDate, "HH:mm"));
+          setSelectedTime(formatEasternTime(scheduledDate, "HH:mm"));
         }
       };
       loadGroupSession();
@@ -1587,11 +1588,11 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
                                       <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
                                         <div className="flex items-center gap-1">
                                           <CalendarIcon className="w-4 h-4" />
-                                          {format(scheduledDate, "MMM d, yyyy")}
+                                          {formatDateEastern(scheduledDate, "MMM d, yyyy")}
                                         </div>
                                         <div className="flex items-center gap-1">
                                           <Clock className="w-4 h-4" />
-                                          {format(scheduledDate, "h:mm a")}
+                                          {formatTimeEastern(scheduledDate, "h:mm a")}
                                         </div>
                                         <div className="flex items-center gap-1">
                                           <Clock className="w-4 h-4" />
@@ -1716,11 +1717,11 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
                                           <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
                                             <div className="flex items-center gap-1">
                                               <CalendarIcon className="w-4 h-4" />
-                                              {format(scheduledDate, "MMM d, yyyy")}
+                                              {formatDateEastern(scheduledDate, "MMM d, yyyy")}
                                             </div>
                                             <div className="flex items-center gap-1">
                                               <Clock className="w-4 h-4" />
-                                              {format(scheduledDate, "h:mm a")}
+                                              {formatTimeEastern(scheduledDate, "h:mm a")}
                                             </div>
                                             <div className="flex items-center gap-1">
                                               <MapPin className="w-4 h-4" />
@@ -1912,7 +1913,7 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
                               setSelectedGroupSession(groupClass);
                               setSelectedPractitioner(groupClass.practitioner);
                               setSelectedDate(scheduledDate);
-                              setSelectedTime(format(scheduledDate, "HH:mm"));
+                              setSelectedTime(formatEasternTime(scheduledDate, "HH:mm"));
                               // Update URL with group session ID
                               updateURL({ groupSessionId: groupClass.id });
                             }}
@@ -1945,11 +1946,11 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
                                   <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
                                     <div className="flex items-center gap-1">
                                       <CalendarIcon className="w-4 h-4" />
-                                      {format(scheduledDate, "MMM d, yyyy")}
+                                      {formatDateEastern(scheduledDate, "MMM d, yyyy")}
                                     </div>
                                     <div className="flex items-center gap-1">
                                       <Clock className="w-4 h-4" />
-                                      {format(scheduledDate, "h:mm a")}
+                                      {formatTimeEastern(scheduledDate, "h:mm a")}
                                     </div>
                                     <div className="flex items-center gap-1">
                                       <Clock className="w-4 h-4" />
@@ -2177,7 +2178,7 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
                   ? new Date(selectedGroupSession.scheduled_at)
                   : selectedDate!;
                 const sessionTime = isGroup && selectedGroupSession
-                  ? format(new Date(selectedGroupSession.scheduled_at), "HH:mm")
+                  ? formatEasternTime(selectedGroupSession.scheduled_at, "HH:mm")
                   : selectedTime!;
                 const sessionDuration = isGroup && selectedGroupSession
                   ? selectedGroupSession.duration_minutes || selectedDuration
@@ -2215,13 +2216,13 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
                     <div className="grid grid-cols-2 gap-4 pt-4 border-t">
                       <div>
                         <p className="text-sm text-muted-foreground">Date</p>
-                        <p className="font-medium">{format(sessionDate, "EEEE, MMMM d, yyyy")}</p>
+                        <p className="font-medium">{formatDateEastern(sessionDate, "EEEE, MMMM d, yyyy")}</p>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Time</p>
                         <p className="font-medium">
                           {isGroup && selectedGroupSession
-                            ? format(new Date(selectedGroupSession.scheduled_at), "h:mm a")
+                            ? formatTimeEastern(selectedGroupSession.scheduled_at, "h:mm a")
                             : selectedTime}
                         </p>
                       </div>
@@ -2306,7 +2307,7 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
                             Are you sure you want to book this group class?
                             <br />
                             <br />
-                            <strong>Class:</strong> {format(new Date(selectedGroupSession.scheduled_at), "EEEE, MMMM d, yyyy 'at' h:mm a")}
+                            <strong>Class:</strong> {formatDateTimeEastern(selectedGroupSession.scheduled_at, "EEEE, MMMM d, yyyy 'at' h:mm a")}
                             <br />
                             <strong>Duration:</strong> {selectedGroupSession.duration_minutes || selectedDuration} minutes
                             <br />
@@ -2322,7 +2323,7 @@ export const SessionScheduler = ({ onSessionBooked }: SessionSchedulerProps) => 
                             <br />
                             <strong>Practitioner:</strong> {selectedPractitioner?.name}
                             <br />
-                            <strong>Date & Time:</strong> {selectedDate && selectedTime ? format(setMinutes(setHours(selectedDate, parseInt(selectedTime.split(':')[0])), parseInt(selectedTime.split(':')[1])), "EEEE, MMMM d, yyyy 'at' h:mm a") : 'N/A'}
+                            <strong>Date & Time:</strong> {selectedDate && selectedTime ? formatDateTimeEastern(setMinutes(setHours(selectedDate, parseInt(selectedTime.split(':')[0])), parseInt(selectedTime.split(':')[1])), "EEEE, MMMM d, yyyy 'at' h:mm a") : 'N/A'}
                             <br />
                             <strong>Duration:</strong> {selectedDuration} minutes
                             <br />

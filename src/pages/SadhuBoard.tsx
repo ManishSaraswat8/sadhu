@@ -17,6 +17,10 @@ const SadhuBoard = () => {
   const { toast } = useToast();
   const { currency, formatPrice } = useCurrency();
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const features = [
     "Handcrafted from premium Mango Wood",
     "Precision-placed copper nails",

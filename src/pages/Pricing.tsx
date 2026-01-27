@@ -56,9 +56,12 @@ const Pricing = () => {
               </CardHeader>
               <CardContent className="text-center">
                 <div className="mb-6">
-                  <span className="text-4xl font-bold text-foreground">$169</span>
-                  <span className="text-muted-foreground ml-2">one-time</span>
+                  <span className="text-4xl font-bold text-foreground">$229</span>
+                  <span className="text-muted-foreground ml-2">CAD one-time</span>
                 </div>
+                <p className="text-sm text-primary mb-4 font-medium">
+                  Free shipping worldwide
+                </p>
                 <ul className="space-y-3 text-left">
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
@@ -109,39 +112,31 @@ const Pricing = () => {
                 Most Popular
               </div>
               <CardHeader className="text-center pb-2">
-                <CardTitle className="font-heading text-2xl text-foreground">AI Meditation Guide</CardTitle>
+                <CardTitle className="font-heading text-2xl text-foreground">Sadhu Meditation Guide</CardTitle>
                 <CardDescription className="text-muted-foreground">
                   Subscription Service
                 </CardDescription>
               </CardHeader>
               <CardContent className="text-center">
                 <div className="mb-2">
-                  <span className="text-4xl font-bold text-foreground">$14.99</span>
+                  <span className="text-4xl font-bold text-foreground">$49.99</span>
                   <span className="text-muted-foreground ml-2">/month</span>
                 </div>
                 <p className="text-sm text-primary mb-6">
-                  or $11.99/month billed annually ($143.88/year)
+                  or $43.99/month billed annually
                 </p>
                 <ul className="space-y-3 text-left">
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span className="text-muted-foreground text-sm">Personalized AI meditation guide</span>
+                    <span className="text-muted-foreground text-sm">Unlimited Monthly Group Classes</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span className="text-muted-foreground text-sm">Voice-activated sessions</span>
+                    <span className="text-muted-foreground text-sm">Journal</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span className="text-muted-foreground text-sm">Session memory & continuity</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span className="text-muted-foreground text-sm">Progress tracking & journal</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span className="text-muted-foreground text-sm">7-day free trial included</span>
+                    <span className="text-muted-foreground text-sm">3 Class Pass Trial</span>
                   </li>
                 </ul>
               </CardContent>
@@ -181,23 +176,19 @@ const Pricing = () => {
                 <ul className="space-y-3 text-left">
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span className="text-muted-foreground text-sm">Live video sessions with experts</span>
+                    <span className="text-muted-foreground text-sm">1:1 Personalized Video Classes</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span className="text-muted-foreground text-sm">Personalized action checklists</span>
+                    <span className="text-muted-foreground text-sm">Personalized Recommendations</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span className="text-muted-foreground text-sm">30 or 60 minute sessions</span>
+                    <span className="text-muted-foreground text-sm">30 or 60 Minute Classes</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span className="text-muted-foreground text-sm">Flexible scheduling</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span className="text-muted-foreground text-sm">Session notes & follow-ups</span>
+                    <span className="text-muted-foreground text-sm">Follow-ups</span>
                   </li>
                 </ul>
               </CardContent>

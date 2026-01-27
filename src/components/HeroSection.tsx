@@ -50,11 +50,11 @@ const HeroSection = () => {
                 Begin Your Journey
               </Button>
             </Link>
-            <a href="#guidance">
+            <Link to="/readiness-test">
               <Button variant="hero" size="xl">
-                Learn About Guidance
+                Readiness Test
               </Button>
-            </a>
+            </Link>
           </div>
 
           <div className="flex items-center justify-center gap-8 pt-8 text-muted-foreground text-sm">

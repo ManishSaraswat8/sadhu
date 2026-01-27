@@ -203,10 +203,10 @@ const SadhuBoardInfo = () => {
                   <Shield className="h-6 w-6 text-primary" />
                 </div>
                 <h4 className="font-display text-lg font-bold text-foreground mb-3">
-                  Non-Slip Foundation
+                  Secure Case
                 </h4>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  A stable grounding layer that allows you to drop fully into the practice without external disruption.
+                  A sadhu board case is a protective, functional carrying system designed to transport, store, and respect a sadhu (nail) board safely and intentionally.
                 </p>
               </div>
             </div>
@@ -242,7 +242,7 @@ const SadhuBoardInfo = () => {
             Step onto the path of presence and transform your relationship with intensity.
           </p>
           <Button asChild size="lg" className="text-lg px-8 py-6">
-            <Link to="/sadhu-board">Get Your Sadhu Board — $169</Link>
+            <Link to="/sadhu-board">Get Your Sadhu Board</Link>
           </Button>
         </div>
       </section>

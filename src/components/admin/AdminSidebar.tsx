@@ -44,7 +44,7 @@ const navItems: NavItem[] = [
   { icon: CreditCard, label: "Subscriptions", href: "/admin/subscriptions" },
   { icon: Link2, label: "Group Classes", href: "/admin/group-sessions" },
   { icon: Video, label: "Videos", href: "/admin/videos" },
-  { icon: FileText, label: "Policies", href: "/admin/policies" },
+  { icon: FileText, label: "Content Management", href: "/admin/policies" },
 ];
 
 export function AdminSidebar() {

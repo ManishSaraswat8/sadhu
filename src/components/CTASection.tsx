@@ -35,7 +35,7 @@ const CTASection = () => {
             </Link>
             <Link to="/subscribe">
               <Button variant="hero" size="xl" className="min-w-[200px]">
-                Try AI Guide Free
+                Access 3 Free Classes
               </Button>
             </Link>
           </div>

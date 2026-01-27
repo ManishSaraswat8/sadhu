@@ -14,8 +14,8 @@ export function CancellationPolicyManager() {
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     policy_text: "",
-    standard_cancellation_hours: 12,
-    late_cancellation_hours: 5,
+    standard_cancellation_hours: 2,
+    late_cancellation_hours: 2,
     late_cancellation_fee_usd: 25.00,
     late_cancellation_fee_cad: 34.25,
     grace_cancellations_allowed: 1,
@@ -42,8 +42,8 @@ export function CancellationPolicyManager() {
     if (policy) {
       setFormData({
         policy_text: policy.policy_text || "",
-        standard_cancellation_hours: policy.standard_cancellation_hours || 12,
-        late_cancellation_hours: policy.late_cancellation_hours || 5,
+        standard_cancellation_hours: policy.standard_cancellation_hours || 2,
+        late_cancellation_hours: policy.late_cancellation_hours || 2,
         late_cancellation_fee_usd: Number(policy.late_cancellation_fee_usd) || 25.00,
         late_cancellation_fee_cad: Number(policy.late_cancellation_fee_cad) || 34.25,
         grace_cancellations_allowed: policy.grace_cancellations_allowed || 1,
@@ -141,7 +141,7 @@ export function CancellationPolicyManager() {
                 type="number"
                 min="1"
                 value={formData.standard_cancellation_hours}
-                onChange={(e) => setFormData({ ...formData, standard_cancellation_hours: parseInt(e.target.value) || 12 })}
+                onChange={(e) => setFormData({ ...formData, standard_cancellation_hours: parseInt(e.target.value) || 2 })}
                 required
               />
               <p className="text-xs text-muted-foreground">
@@ -155,7 +155,7 @@ export function CancellationPolicyManager() {
                 type="number"
                 min="1"
                 value={formData.late_cancellation_hours}
-                onChange={(e) => setFormData({ ...formData, late_cancellation_hours: parseInt(e.target.value) || 5 })}
+                onChange={(e) => setFormData({ ...formData, late_cancellation_hours: parseInt(e.target.value) || 2 })}
                 required
               />
               <p className="text-xs text-muted-foreground">

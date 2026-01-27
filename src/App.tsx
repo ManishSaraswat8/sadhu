@@ -30,6 +30,7 @@ import UpdatePassword from "./pages/UpdatePassword";
 import Pricing from "./pages/Pricing";
 import SadhuBoardInfo from "./pages/SadhuBoardInfo";
 import BecomePractitioner from "./pages/BecomePractitioner";
+import ReadinessTest from "./pages/ReadinessTest";
 import SessionPayment from "./pages/SessionPayment";
 import BookingConfirmation from "./pages/BookingConfirmation";
 import PurchaseHistory from "./pages/PurchaseHistory";
@@ -100,6 +101,7 @@ const App = () => (
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/sadhu-board-info" element={<SadhuBoardInfo />} />
             <Route path="/become-practitioner" element={<BecomePractitioner />} />
+            <Route path="/readiness-test" element={<ReadinessTest />} />
             <Route path="/newsletter" element={<Newsletter />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/practitioners" element={<AdminPractitioners />} />

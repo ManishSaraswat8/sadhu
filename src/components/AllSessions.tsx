@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { formatDateEastern, formatTimeEastern } from "@/lib/dateUtils";
 import { Video, Calendar, Clock, Loader2, Download, BookOpen, Target, User, MapPin, Filter, X, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
 import { AllSessionsJoinButton } from "./AllSessionsJoinButton";
 import { RescheduleDialog } from "./RescheduleDialog";
@@ -584,11 +585,11 @@ export const AllSessions = () => {
                               <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                                 <span className="flex items-center gap-1">
                                   <Calendar className="w-3 h-3" />
-                                  {format(scheduledDate, "MMM d, yyyy")}
+                                  {formatDateEastern(scheduledDate, "MMM d, yyyy")}
                                 </span>
                                 <span className="flex items-center gap-1">
                                   <Clock className="w-3 h-3" />
-                                  {format(scheduledDate, "h:mm a")} • {session.duration_minutes} min
+                                  {formatTimeEastern(scheduledDate, "h:mm a")} • {session.duration_minutes} min
                                 </span>
                                 {session.session_location && (
                                   <span className="flex items-center gap-1">
@@ -688,11 +689,11 @@ export const AllSessions = () => {
                               <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                                 <span className="flex items-center gap-1">
                                   <Calendar className="w-3 h-3" />
-                                  {format(scheduledDate, "MMM d, yyyy")}
+                                  {formatDateEastern(scheduledDate, "MMM d, yyyy")}
                                 </span>
                                 <span className="flex items-center gap-1">
                                   <Clock className="w-3 h-3" />
-                                  {format(scheduledDate, "h:mm a")} • {session.duration_minutes} min
+                                  {formatTimeEastern(scheduledDate, "h:mm a")} • {session.duration_minutes} min
                                 </span>
                                 {session.session_location && (
                                   <span className="flex items-center gap-1">
@@ -792,11 +793,11 @@ export const AllSessions = () => {
                               <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                                 <span className="flex items-center gap-1">
                                   <Calendar className="w-3 h-3" />
-                                  {format(scheduledDate, "MMM d, yyyy")}
+                                  {formatDateEastern(scheduledDate, "MMM d, yyyy")}
                                 </span>
                                 <span className="flex items-center gap-1">
                                   <Clock className="w-3 h-3" />
-                                  {format(scheduledDate, "h:mm a")} • {session.duration_minutes} min
+                                  {formatTimeEastern(scheduledDate, "h:mm a")} • {session.duration_minutes} min
                                 </span>
                                 {session.session_location && (
                                   <span className="flex items-center gap-1">

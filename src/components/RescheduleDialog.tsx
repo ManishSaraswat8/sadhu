@@ -7,6 +7,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { format, addHours, isBefore, setHours, setMinutes, startOfDay, endOfDay } from "date-fns";
+import { formatEasternTime, formatDateEastern, formatTimeEastern, formatDateTimeEastern } from "@/lib/dateUtils";
 import { Loader2, Calendar as CalendarIcon, Clock, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -42,7 +43,7 @@ export const RescheduleDialog = ({ open, onOpenChange, session, onRescheduled, i
     if (open && session) {
       const sessionDate = new Date(session.scheduled_at);
       setSelectedDate(sessionDate);
-      setSelectedTime(format(sessionDate, "HH:mm"));
+      setSelectedTime(formatEasternTime(sessionDate, "HH:mm"));
       
       // Check if rescheduling is allowed based on cancellation policy
       if (!isAdmin) {
@@ -198,7 +199,7 @@ export const RescheduleDialog = ({ open, onOpenChange, session, onRescheduled, i
         .from("session_schedules")
         .update({
           scheduled_at: newScheduledAt.toISOString(),
-          notes: session.notes ? `${session.notes}\n\nRescheduled on ${format(new Date(), "MMM d, yyyy 'at' h:mm a")}` : `Rescheduled on ${format(new Date(), "MMM d, yyyy 'at' h:mm a")}`
+          notes: session.notes ? `${session.notes}\n\nRescheduled on ${formatDateTimeEastern(new Date(), "MMM d, yyyy 'at' h:mm a")}` : `Rescheduled on ${formatDateTimeEastern(new Date(), "MMM d, yyyy 'at' h:mm a")}`
         })
         .eq("id", session.id);
 
@@ -258,8 +259,8 @@ export const RescheduleDialog = ({ open, onOpenChange, session, onRescheduled, i
           <div className="p-4 bg-muted/50 rounded-lg">
             <p className="text-sm font-medium mb-2">Current Session</p>
             <div className="text-sm text-muted-foreground space-y-1">
-              <p>Date: {format(sessionDate, "EEEE, MMMM d, yyyy")}</p>
-              <p>Time: {format(sessionDate, "h:mm a")}</p>
+              <p>Date: {formatDateEastern(sessionDate, "EEEE, MMMM d, yyyy")}</p>
+              <p>Time: {formatTimeEastern(sessionDate, "h:mm a")}</p>
               <p>Duration: {session.duration_minutes} minutes</p>
             </div>
           </div>

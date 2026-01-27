@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { formatDateEastern } from "@/lib/dateUtils";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -81,7 +82,7 @@ const Journal = () => {
       if (!error && data) {
         setSessionInfo({
           practitioner: (data as any).practitioner.name,
-          date: new Date((data as any).scheduled_at).toLocaleDateString(),
+          date: formatDateEastern((data as any).scheduled_at, "MMM d, yyyy"),
         });
       }
     } catch (error) {
