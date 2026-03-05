@@ -148,12 +148,12 @@ const FAQ = () => {
                         className="border-b border-border last:border-b-0"
                       >
                         <AccordionTrigger className="px-6 py-4 text-left hover:no-underline">
-                          <span className="font-medium text-foreground">
+                          <span className="font-heading font-medium text-base md:text-lg text-foreground">
                             {faq.question}
                           </span>
                         </AccordionTrigger>
                         <AccordionContent className="px-6 pb-4">
-                          <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
+                          <p className="text-base text-muted-foreground leading-relaxed whitespace-pre-line">
                             {faq.answer}
                           </p>
                         </AccordionContent>

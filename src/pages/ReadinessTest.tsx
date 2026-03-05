@@ -107,7 +107,7 @@ const ReadinessTest = () => {
   const handleAnswer = (value: string) => {
     const questionId = questions[currentQuestion]?.id;
     if (questionId) {
-      setAnswers({ ...answers, [questionId]: value });
+      setAnswers((previousAnswers) => ({ ...previousAnswers, [questionId]: value }));
     }
   };
 
@@ -317,21 +317,25 @@ const ReadinessTest = () => {
                   onValueChange={handleAnswer}
                   className="space-y-3"
                 >
-                  {currentQuestionData?.options.map((option) => (
-                    <div
-                      key={option.value}
-                      className="flex items-center space-x-3 p-4 rounded-lg border border-border hover:border-primary/50 transition-colors cursor-pointer"
-                    >
-                      <RadioGroupItem value={option.value} id={option.value} />
-                      <Label
-                        htmlFor={option.value}
-                        className="flex-1 cursor-pointer text-foreground"
+                  {currentQuestionData?.options.map((option) => {
+                    const optionId = `${currentQuestionData.id}-${option.value}`;
+
+                    return (
+                      <div
+                        key={optionId}
+                        className="flex items-center space-x-3 p-4 rounded-lg border border-border hover:border-primary/50 transition-colors cursor-pointer"
                       >
-                        <span className="font-medium mr-2">{option.value})</span>
-                        {option.label}
-                      </Label>
-                    </div>
-                  ))}
+                        <RadioGroupItem value={option.value} id={optionId} />
+                        <Label
+                          htmlFor={optionId}
+                          className="flex-1 cursor-pointer text-foreground"
+                        >
+                          <span className="font-medium mr-2">{option.value})</span>
+                          {option.label}
+                        </Label>
+                      </div>
+                    );
+                  })}
                 </RadioGroup>
 
                 <div className="flex gap-4 pt-6">

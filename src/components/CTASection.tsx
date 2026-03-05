@@ -1,7 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { wellnessLivingThreeFreeClasses } from "@/config/wellnessLiving";
 
 const CTASection = () => {
+  const threeFreeClassesUrl = wellnessLivingThreeFreeClasses.url;
+  const isExternalThreeClassUrl = /^https?:\/\//i.test(threeFreeClassesUrl);
+
   return (
     <section className="py-32 relative overflow-hidden">
       {/* Subtle background */}
@@ -33,12 +37,23 @@ const CTASection = () => {
                 Get the Sadhu Board
               </Button>
             </Link>
-            <Link to="/subscribe">
-              <Button variant="hero" size="xl" className="min-w-[200px]">
-                Access 3 Free Classes
-              </Button>
-            </Link>
+            {isExternalThreeClassUrl ? (
+              <a href={threeFreeClassesUrl} target="_blank" rel="noopener noreferrer">
+                <Button variant="hero" size="xl" className="min-w-[240px]">
+                  {wellnessLivingThreeFreeClasses.ctaText}
+                </Button>
+              </a>
+            ) : (
+              <Link to={threeFreeClassesUrl}>
+                <Button variant="hero" size="xl" className="min-w-[240px]">
+                  {wellnessLivingThreeFreeClasses.ctaText}
+                </Button>
+              </Link>
+            )}
           </div>
+          <p className="text-sm text-muted-foreground">
+            {wellnessLivingThreeFreeClasses.pricingText}
+          </p>
 
           {/* Stats */}
           <div className="flex items-center justify-center gap-12 md:gap-16 pt-6">

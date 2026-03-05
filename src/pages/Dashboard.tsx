@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LogOut, BookOpen, Video, User, Sparkles, Target } from "lucide-react";
+import { LogOut, BookOpen, Video, User, Sparkles, Target, Ticket } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { UserLayout } from "@/components/UserLayout";
 import { GettingStarted } from "@/components/dashboard/GettingStarted";
@@ -12,6 +12,7 @@ import { OnlineSessions } from "@/components/dashboard/OnlineSessions";
 import { InPersonSessions } from "@/components/dashboard/InPersonSessions";
 import { ActionsWindow } from "@/components/dashboard/ActionsWindow";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
+import { BookingsAndPasses } from "@/components/dashboard/BookingsAndPasses";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Dashboard = () => {
@@ -101,6 +102,10 @@ const Dashboard = () => {
                 <User className="w-4 h-4" />
                 In-Person Sessions
               </TabsTrigger>
+              <TabsTrigger value="bookings" className="flex items-center gap-2">
+                <Ticket className="w-4 h-4" />
+                Bookings & Passes
+              </TabsTrigger>
               <TabsTrigger value="journal" className="flex items-center gap-2" asChild>
                 <Link to="/journal">
                   <BookOpen className="w-4 h-4" />
@@ -123,6 +128,9 @@ const Dashboard = () => {
         </TabsContent>
         <TabsContent value="in-person" className="mt-0">
           <InPersonSessions />
+        </TabsContent>
+        <TabsContent value="bookings" className="mt-0">
+          <BookingsAndPasses />
         </TabsContent>
         <TabsContent value="actions" className="mt-0">
           <ActionsWindow />
