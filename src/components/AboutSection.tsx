@@ -1,8 +1,24 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import homeVideo from "@/assets/home.mov";
+import homeVideoPoster from "@/assets/IMG_9470.jpg";
 
 const AboutSection = () => {
   const [isStoryExpanded, setIsStoryExpanded] = useState(false);
+  const [showVideoControls, setShowVideoControls] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const homeVideoMp4 = import.meta.env.VITE_HOME_VIDEO_MP4_URL?.trim();
+
+  const handleCanPlay = () => {
+    const videoElement = videoRef.current;
+    if (!videoElement) return;
+
+    // If autoplay is blocked on a device/browser, reveal controls as fallback.
+    const playback = videoElement.play();
+    if (playback && typeof playback.catch === "function") {
+      playback.catch(() => setShowVideoControls(true));
+    }
+  };
 
   return (
     <section id="about" className="py-24 bg-background">
@@ -17,19 +33,26 @@ const AboutSection = () => {
         </div>
 
         <div className="max-w-5xl mx-auto space-y-8">
-          {/* Video Placeholder - Large Rectangle */}
-          <div className="aspect-[21/9] bg-muted/30 rounded-2xl border border-border/50 flex items-center justify-center overflow-hidden">
-            <div className="text-center p-8">
-              <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
-                <svg 
-                  className="w-10 h-10 text-primary" 
-                  fill="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              </div>
-              <p className="text-muted-foreground text-lg">Promotional Video</p>
+          {/* Promotional Video */}
+          <div className="rounded-3xl p-2 bg-gradient-to-br from-primary/10 via-muted/40 to-primary/5 border border-border/50 shadow-sm">
+            <div className="relative aspect-video overflow-hidden rounded-2xl bg-muted/20">
+              <video
+                ref={videoRef}
+                className="w-full h-full object-cover"
+                poster={homeVideoPoster}
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="auto"
+                controls={showVideoControls}
+                onCanPlay={handleCanPlay}
+                onError={() => setShowVideoControls(true)}
+              >
+                {homeVideoMp4 ? <source src={homeVideoMp4} type="video/mp4" /> : null}
+                <source src={homeVideo} />
+                Your browser does not support this video format.
+              </video>
             </div>
           </div>
 

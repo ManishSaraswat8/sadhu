@@ -313,7 +313,8 @@ const ReadinessTest = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <RadioGroup
-                  value={currentAnswer}
+                  key={currentQuestionData?.id}
+                  value={currentAnswer ?? ""}
                   onValueChange={handleAnswer}
                   className="space-y-3"
                 >
